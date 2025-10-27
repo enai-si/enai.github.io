@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ENAI - Soluções Inteligentes</title>
+
+<!-- Firebase (compat) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
+<!-- Leaflet (OpenStreetMap) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+:root{
+  --blue-1:#007bff;
+  --blue-2:#0046a3;
+  --bg:#f5f7fa;
+  --muted:#666;
+  --green:#1db954;
+  --red:#e53935;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:'Segoe UI',Tahoma,Arial,sans-serif;
+  background:var(--bg);
+  color:#222;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+header{
+  background:linear-gradient(to right,var(--blue-1),var(--blue-2));
+  padding:15px 30px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  color:white;
+  box-shadow:0 4px 10px rgba(0,0,0,0.18);
+  position:relative;
+  z-index:3;
+}
+header h2{margin:0;font-size:20px;letter-spacing:0.2px;}
+.logo-header{position:absolute;top:10px;right:30px;}
+.logo-header img{height:60px;border-radius:10px;}
+.wave-bg{
+  position:absolute;top:0;left:0;width:100%;height:250px;
+  background:url('476426a2-35c7-41f2-a34d-7acc92b47b11.png') no-repeat center top;
+  background-size:cover;z-index:0;
+}
+.container{
+  max-width:880px;
+  margin:100px auto;
+  background:#fff;
+  border-radius:18px;
+  box-shadow:0 6px 26px rgba(0,0,0,0.12);
+  padding:36px;
+  position:relative;
+  z-index:2;
+  min-height:420px;
+  overflow:hidden;
+}
+.page{
+  opacity:0;
+  transform:translateY(18px);
+  pointer-events:none;
+  transition:opacity .38s ease,transform .38s ease;
+  position:absolute;
+  width:calc(100% - 72px);
+  left:36px;top:36px;
+}
+.page.active{
+  opacity:1;
+  transform:translateY(0);
+  pointer-events:auto;
+  position:relative;
+  width:auto;left:auto;top:auto;
+}
+h1{color:var(--blue-2);text-align:center;margin-top:0;}
+input,select,textarea{
+  width:100%;padding:10px 12px;margin:8px 0;border-radius:8px;
+  border:1px solid #d5dbe3;font-size:14px;
+}
+button{
+  background:var(--blue-1);color:#fff;border:none;border-radius:10px;
+  padding:10px 16px;margin:6px 6px 0 0;cursor:pointer;font-weight:600;
+  transition:background .18s ease,transform .06s ease;
+}
+button:hover{background:var(--blue-2);transform:translateY(-2px);}
+.muted{color:var(--muted);font-size:13px;}
+.row{display:flex;gap:12px;flex-wrap:wrap;}
+.col{flex:1;min-width:150px;}
+.on{color:var(--green);font-weight:700;}
+.off{color:var(--red);font-weight:700;}
+.slider{width:100%;margin:6px 0;-webkit-appearance:none;height:8px;background:#e6e9ee;border-radius:6px;outline:none;}
+.slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--blue-1);cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.12);}
+.vehicle-card{display:flex;gap:16px;align-items:center;border:1px solid #eef2f6;padding:12px;border-radius:12px;}
+.vehicle-img{width:170px;height:120px;background:#f3f5f7;border-radius:10px;object-fit:cover;border:2px solid var(--blue-1);}
+#mapid{width:100%;height:300px;border-radius:10px;margin-top:10px;}
+@media(max-width:720px){
+  .container{margin:60px 12px;padding:20px;}
+  .page{width:100%;left:0;top:0;}
+  .vehicle-img{width:120px;height:90px;}
+}
+</style>
+</head>
+<body>
+<header>
+  <h2>ENAI - Soluções Inteligentes</h2>
+  <div class="logo-header"><img src="79a273ad-ce2c-4c51-ad1b-39c23f55e7f3.png" alt="Logo"></div>
+</header>
+<div class="wave-bg"></div>
+
+<div class="container">
+  <!-- LOGIN -->
+  <div id="loginPage" class="page active">
+    <h1>Login</h1>
+    <input id="loginEmail" type="email" placeholder="Email">
+    <input id="loginSenha" type="password" placeholder="Senha">
+    <div>
+      <button onclick="login()">Entrar</button>
+      <button onclick="showPage('cadastroPage')">Cadastre-se</button>
+    </div>
+    <p class="muted" style="margin-top:10px;"><a href="#" onclick="resetarSenha()">Esqueci minha senha</a></p>
+  </div>
+
+  <!-- CADASTRO -->
+  <div id="cadastroPage" class="page">
+    <h1>Cadastro</h1>
+    <input id="cadNome" placeholder="Nome completo">
+    <input id="cadEmail" placeholder="Email">
+    <input id="cadTel" placeholder="Telefone">
+    <input id="cadCPF" placeholder="CPF">
+    <input id="cadEndereco" placeholder="Endereço">
+    <input id="cadSenha" type="password" placeholder="Senha">
+    <div>
+      <button onclick="cadastro()">Cadastrar</button>
+      <button onclick="showPage('loginPage')">Voltar</button>
+    </div>
+  </div>
+
+  <!-- PAINEL -->
+  <div id="painelPage" class="page">
+    <h1>Painel do Veículo</h1>
+    <div style="margin-top:12px;">
+      <button onclick="showPage('perfilPage')">Meu Perfil</button>
+      <button onclick="showPage('meuVeiculoPage')">Meu Veículo</button>
+      <button onclick="showPage('travaPage')">Trava de Portas</button>
+      <button onclick="showPage('vidrosPage')">Vidros</button>
+      <button onclick="showPage('motorPage')">Motor</button>
+      <button onclick="showPage('arPage')">Ar Condicionado</button>
+      <button onclick="showPage('radioPage')">Rádio</button>
+      <button onclick="abrirGPS()">GPS</button>
+      <button onclick="showPage('manutPage')">Plano de Manutenção</button>
+      <button onclick="logout()">Sair</button>
+    </div>
+  </div>
+
+ <!-- PERFIL -->
+  <div id="perfilPage" class="page">
+    <h1>Meu Perfil</h1>
+    <label>Nome</label>
+    <input id="perfilNome" placeholder="Nome completo">
+    <label>Email</label>
+    <input id="perfilEmail" placeholder="Email" disabled>
+    <label>Telefone</label>
+    <input id="perfilTel" placeholder="Telefone">
+    <label>CPF</label>
+    <input id="perfilCPF" placeholder="CPF">
+    <label>Endereço</label>
+    <input id="perfilEndereco" placeholder="Endereço">
+
+    <h1 style="font-size:18px; margin-top:12px;">Dados do Veículo</h1>
+    <label>Fabricante</label>
+    <input id="perfilFabricante" placeholder="Fabricante">
+    <label>Modelo</label>
+    <input id="perfilModelo" placeholder="Modelo">
+    <div class="row">
+      <div class="col">
+        <label>Placa</label>
+        <input id="perfilPlaca" placeholder="Placa">
+      </div>
+      <div class="col">
+        <label>Ano</label>
+        <input id="perfilAno" placeholder="Ano">
+      </div>
+    </div>
+    <label>Cor</label>
+    <input id="perfilCor" placeholder="Cor">
+    <label>Foto do veículo (opcional)</label>
+    <input id="perfilFotoInput" type="file" accept="image/*" onchange="uploadFotoPerfil(event)">
+    <img id="perfilFotoPreview" src="" style="display:none; width:180px; height:120px; object-fit:cover; border-radius:8px; margin-top:8px;">
+    <div style="margin-top:10px;">
+      <button onclick="salvarPerfilCompleto()">Salvar</button>
+      <button onclick="showPage('painelPage')">Voltar</button>
+    </div>
+  </div>
+
+<!-- MEU VEÍCULO -->
+  <div id="meuVeiculoPage" class="page">
+    <h1>Meu Veículo</h1>
+    <div class="vehicle-card" style="margin-top:12px;">
+      <img id="veiculoFoto" class="vehicle-img" src="" alt="Foto do veículo" style="display:none;">
+      <div style="flex:1;">
+        <div><strong>Fabricante:</strong> <span id="viewFabricante">—</span></div>
+        <div><strong>Modelo:</strong> <span id="viewModelo">—</span></div>
+        <div><strong>Placa:</strong> <span id="viewPlaca">—</span></div>
+        <div><strong>Ano:</strong> <span id="viewAno">—</span></div>
+        <div><strong>Cor:</strong> <span id="viewCor">—</span></div>
+      </div>
+    </div>
+    <div style="margin-top:12px;">
+      <label>Alterar foto do veículo</label>
+      <input id="veiculoFotoInput" type="file" accept="image/*" onchange="uploadFotoVeiculoFromPanel(event)">
+    </div>
+    <div style="margin-top:12px;">
+      <button onclick="carregarVeiculo()">Atualizar Dados</button>
+      <button onclick="showPage('painelPage')">Voltar</button>
+    </div>
+  </div>
+
+    <!-- TRAVAS -->
+  <div id="travaPage" class="page">
+    <h1>Trava de Portas</h1>
+    <div style="margin-top:12px;">
+      <div style="margin-bottom:8px;"><strong>Esq Dianteira:</strong> <span id="travaLed1" class="on">Fechada</span> <button onclick="toggleTrava(1)">Abrir</button></div>
+      <div style="margin-bottom:8px;"><strong>Esq Traseira:</strong> <span id="travaLed2" class="on">Fechada</span> <button onclick="toggleTrava(2)">Abrir</button></div>
+      <div style="margin-bottom:8px;"><strong>Dir Dianteira:</strong> <span id="travaLed3" class="on">Fechada</span> <button onclick="toggleTrava(3)">Abrir</button></div>
+      <div style="margin-bottom:8px;"><strong>Dir Traseira:</strong> <span id="travaLed4" class="on">Fechada</span> <button onclick="toggleTrava(4)">Abrir</button></div>
+      <div style="margin-bottom:8px;"><strong>Porta-malas:</strong> <span id="travaLed5" class="on">Fechada</span> <button onclick="toggleTrava(5)">Abrir</button></div>
+    </div>
+    <div style="margin-top:12px;">
+      <button onclick="abrirTudo()">Abrir Tudo</button>
+      <button onclick="fecharTudo()">Fechar Tudo</button>
+      <button onclick="showPage('painelPage')">Voltar</button>
+    </div>
+  </div>
+
+  <!-- VIDROS -->
+  <div id="vidrosPage" class="page">
+    <h1>Vidros</h1>
+    <div style="margin-top:12px;">
+      <label>Vidro Dianteiro Esquerdo: <span id="v1pct">100%</span></label>
+      <input id="vidro1" class="slider" type="range" min="0" max="100" value="100" oninput="updateVidro(1)">
+      <label>Vidro Dianteiro Direito: <span id="v2pct">100%</span></label>
+      <input id="vidro2" class="slider" type="range" min="0" max="100" value="100" oninput="updateVidro(2)">
+      <label>Vidro Traseiro Esquerdo: <span id="v3pct">100%</span></label>
+      <input id="vidro3" class="slider" type="range" min="0" max="100" value="100" oninput="updateVidro(3)">
+      <label>Vidro Traseiro Direito: <span id="v4pct">100%</span></label>
+      <input id="vidro4" class="slider" type="range" min="0" max="100" value="100" oninput="updateVidro(4)">
+    </div>
+    <div style="margin-top:12px;">
+      <button onclick="showPage('painelPage')">Voltar</button>
+    </div>
+  </div>
+
+  <!-- MOTOR -->
+  <div id="motorPage" class="page">
+    <h1>Motor</h1>
+    <p>Status: <span id="motorStatus" class="off">Desligado</span></p>
+    <div>
+      <button onclick="toggleMotor()">Ligar/Desligar</button>
+      <button onclick="showPage('painelPage')">Voltar</button>
+    </div>
+  </div>
+
+  <!-- AR -->
+  <div id="arPage" class="page">
+    <h1>Ar Condicionado</h1>
+    <p>Status: <span id="statusAr" class="off">Desligado</span></p>
+    <div>
+      <button onclick="toggleAr()">Ligar/Desligar</button>
+      <button onclick="alterarTemp(-1)">-</button>
+      <span style="margin:0 12px">Temperatura: <strong><span id="tempAr">22</span>°C</strong></span>
+      <button onclick="alterarTemp(1)">+</button>
+      <button style="margin-left:12px" onclick="showPage('painelPage')">Voltar</button>
+    </div>
+  </div>
+
+  <!-- RADIO -->
+  <div id="radioPage" class="page">
+    <h1>Rádio</h1>
+    <p>Frequência: <span id="radioFreq">99.5</span> MHz</p>
+    <div>
+      <button onclick="alterarFreq(-0.1)">-</button>
+      <button onclick="alterarFreq(0.1)">+</button>
+      <button onclick="showPage('painelPage')">Voltar</button>
+    </div>
+  </div>
+
+  <!-- GPS -->
+  <div id="gpsPage" class="page">
+    <h1>GPS - Localização Atual</h1>
+    <div id="mapid">Carregando mapa...</div>
+    <button style="margin-top:12px;" onclick="showPage('painelPage')">Voltar</button>
+  </div>
+
+  <!-- MANUTENÇÃO -->
+  <div id="manutPage" class="page">
+    <h1>Plano de Manutenção</h1>
+    <p>Controle de revisões e alertas do veículo:</p>
+    <ul>
+      <li>Troca de óleo – a cada 10.000 km</li>
+      <li>Revisão de freios – a cada 15.000 km</li>
+      <li>Troca de filtro de ar – a cada 20.000 km</li>
+    </ul>
+    <button onclick="showPage('painelPage')">Voltar</button>
+  </div>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBmPCQdVhQZt51ZnFwur8nRmGIpRdWBfEs",
+  authDomain: "enai-si.firebaseapp.com",
+  databaseURL: "https://enai-si-default-rtdb.firebaseio.com",
+  projectId: "enai-si",
+  storageBucket: "enai-si.firebasestorage.app",
+  messagingSenderId: "796550446327",
+  appId: "1:796550446327:web:636483a584052f960be7f2",
+  measurementId: "G-RJWEQ2QSBQ"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+const storage = firebase.storage();
+
+let usuarioAtual = null;
+let motorLigado = false;
+let arLigado = false;
+let tempAtual = 22;
+
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function login(){
+  const email = document.getElementById('loginEmail').value;
+  const senha = document.getElementById('loginSenha').value;
+  firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION)
+    .then(()=>{
+      return auth.signInWithEmailAndPassword(email, senha);
+    })
+    .then(()=>{
+      showPage('painelPage');
+      carregarVeiculo();
+    })
+    .catch(err=> alert(err.message));
+}
+
+function cadastro(){
+  const nome = document.getElementById('cadNome').value;
+  const email = document.getElementById('cadEmail').value;
+  const senha = document.getElementById('cadSenha').value;
+  auth.createUserWithEmailAndPassword(email, senha)
+    .then(u=>{
+      const uid = u.user.uid;
+      db.ref('usuarios/'+uid).set({
+        nome,
+        email,
+        telefone: document.getElementById('cadTel').value,
+        cpf: document.getElementById('cadCPF').value,
+        endereco: document.getElementById('cadEndereco').value
+      });
+      alert("Cadastro realizado!");
+      showPage('loginPage');
+    })
+    .catch(err=> alert(err.message));
+}
+
+function logout(){
+  auth.signOut().then(()=> showPage('loginPage'));
+}
+
+function resetarSenha(){
+  const email = document.getElementById('loginEmail').value;
+  if(!email){ alert("Digite seu email para resetar."); return; }
+  auth.sendPasswordResetEmail(email).then(()=> alert("Email enviado para resetar senha"));
+}
+
+// Funções Painel
+function toggleMotor(){
+  motorLigado = !motorLigado;
+  document.getElementById('motorStatus').textContent = motorLigado ? 'Ligado' : 'Desligado';
+  document.getElementById('motorStatus').className = motorLigado ? 'on' : 'off';
+}
+function toggleAr(){
+  arLigado = !arLigado;
+  document.getElementById('statusAr').textContent = arLigado ? 'Ligado' : 'Desligado';
+  document.getElementById('statusAr').className = arLigado ? 'on' : 'off';
+}
+function alterarTemp(delta){
+  tempAtual += delta;
+  document.getElementById('tempAr').textContent = tempAtual;
+}
+function alterarFreq(delta){
+  let freq = parseFloat(document.getElementById('radioFreq').textContent);
+  freq = Math.round((freq+delta)*10)/10;
+  document.getElementById('radioFreq').textContent = freq.toFixed(1);
+}
+
+// Vidros
+function updateVidro(n){
+  const val = document.getElementById('vidro'+n).value;
+  document.getElementById('v'+n+'pct').textContent = val + "%";
+}
+
+// Travas
+function toggleTrava(n){
+  const el = document.getElementById('travaLed'+n);
+  if(el.textContent==='Fechada'){
+    el.textContent='Aberta'; el.className='off';
+  } else {
+    el.textContent='Fechada'; el.className='on';
+  }
+}
+function abrirTudo(){ for(let i=1;i<=5;i++){ document.getElementById('travaLed'+i).textContent='Aberta'; document.getElementById('travaLed'+i).className='off'; }}
+function fecharTudo(){ for(let i=1;i<=5;i++){ document.getElementById('travaLed'+i).textContent='Fechada'; document.getElementById('travaLed'+i).className='on'; }}
+
+// Perfil
+function salvarPerfilCompleto(){
+  if(!usuarioAtual){ alert("Faça login"); return; }
+  const uid = usuarioAtual.uid;
+  db.ref('usuarios/'+uid).update({
+    nome: document.getElementById('perfilNome').value,
+    telefone: document.getElementById('perfilTel').value,
+    cpf: document.getElementById('perfilCPF').value,
+    endereco: document.getElementById('perfilEndereco').value,
+    fabricante: document.getElementById('perfilFabricante').value,
+    modelo: document.getElementById('perfilModelo').value,
+    placa: document.getElementById('perfilPlaca').value,
+    ano: document.getElementById('perfilAno').value,
+    cor: document.getElementById('perfilCor').value
+  });
+  alert("Perfil salvo!");
+}
+
+// Fotos
+function uploadFotoPerfil(event){
+  const file = event.target.files[0];
+  if(!file || !usuarioAtual) return;
+  const uid = usuarioAtual.uid;
+  const storageRef = storage.ref('usuarios/'+uid+'/perfil.jpg');
+  storageRef.put(file).then(()=> {
+    storageRef.getDownloadURL().then(url=>{
+      document.getElementById('perfilFotoPreview').src=url;
+      document.getElementById('perfilFotoPreview').style.display='block';
+    });
+  });
+}
+
+function uploadFotoVeiculoFromPanel(event){
+  const file = event.target.files[0];
+  if(!file || !usuarioAtual) return;
+  const uid = usuarioAtual.uid;
+  const storageRef = storage.ref('usuarios/'+uid+'/veiculo.jpg');
+  storageRef.put(file).then(()=> {
+    storageRef.getDownloadURL().then(url=>{
+      document.getElementById('veiculoFoto').src=url;
+      document.getElementById('veiculoFoto').style.display='block';
+    });
+  });
+}
+
+// Carregar dados do veículo
+function carregarVeiculo(){
+  if(!usuarioAtual) return;
+  const uid = usuarioAtual.uid;
+  db.ref('usuarios/'+uid).once('value').then(snap=>{
+    const d = snap.val();
+    if(!d) return;
+    document.getElementById('perfilNome').value = d.nome || '';
+    document.getElementById('perfilEmail').value = d.email || '';
+    document.getElementById('perfilTel').value = d.telefone || '';
+    document.getElementById('perfilCPF').value = d.cpf || '';
+    document.getElementById('perfilEndereco').value = d.endereco || '';
+    document.getElementById('perfilFabricante').value = d.fabricante || '';
+    document.getElementById('perfilModelo').value = d.modelo || '';
+    document.getElementById('perfilPlaca').value = d.placa || '';
+    document.getElementById('perfilAno').value = d.ano || '';
+    document.getElementById('perfilCor').value = d.cor || '';
+
+    // Atualizar painel veículo
+    document.getElementById('viewFabricante').textContent = d.fabricante||'—';
+    document.getElementById('viewModelo').textContent = d.modelo||'—';
+    document.getElementById('viewPlaca').textContent = d.placa||'—';
+    document.getElementById('viewAno').textContent = d.ano||'—';
+    document.getElementById('viewCor').textContent = d.cor||'—';
+
+    // Carregar fotos
+    const storageRef = storage.ref('usuarios/'+uid+'/veiculo.jpg');
+    storageRef.getDownloadURL().then(url=>{
+      document.getElementById('veiculoFoto').src=url;
+      document.getElementById('veiculoFoto').style.display='block';
+    }).catch(()=>{ document.getElementById('veiculoFoto').style.display='none'; });
+
+    storage.ref('usuarios/'+uid+'/perfil.jpg').getDownloadURL().then(url=>{
+      document.getElementById('perfilFotoPreview').src=url;
+      document.getElementById('perfilFotoPreview').style.display='block';
+    }).catch(()=>{ document.getElementById('perfilFotoPreview').style.display='none'; });
+  });
+}
+
+// === GPS FUNCIONAL (OpenStreetMap / Leaflet) ===
+let map=null;
+function abrirGPS(){
+  showPage('gpsPage');
+  if(map===null){
+    map=L.map('mapid').setView([-14.235,-51.9253],4);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+      maxZoom:19,attribution:'© OpenStreetMap'
+    }).addTo(map);
+  }
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(pos=>{
+      const lat=pos.coords.latitude;
+      const lon=pos.coords.longitude;
+      map.setView([lat,lon],15);
+      L.marker([lat,lon]).addTo(map).bindPopup("Você está aqui!").openPopup();
+    },err=>{
+      alert("Não foi possível obter a localização.");
+    });
+  }else alert("Geolocalização não suportada neste navegador.");
+}
+
+// Monitorar login
+auth.onAuthStateChanged(user=>{
+  usuarioAtual = user;
+  if(user){
+    // Só mostrar painel se já estivermos na página login
+    const currentPage = document.querySelector('.page.active').id;
+    if(currentPage === 'loginPage'){
+      showPage('painelPage');
+      carregarVeiculo();
+    }
+  } else {
+    showPage('loginPage');
+  }
+});
+</script>
+</body>
+</html>
