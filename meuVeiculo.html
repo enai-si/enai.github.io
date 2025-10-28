@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Meu Veículo - ENAI</title>
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head>
+<body>
+<header>
+  <h2>ENAI - Soluções Inteligentes</h2>
+  <div class="logo-header"><img src="img/logo.png" alt="Logo"></div>
+</header>
+<div class="container">
+  <h1>Meu Veículo</h1>
+  <div class="vehicle-card" style="margin-top:12px;">
+    <img id="veiculoFoto" class="vehicle-img" src="" alt="Foto do veículo" style="display:none;">
+    <div style="flex:1;">
+      <div><strong>Fabricante:</strong> <span id="viewFabricante">—</span></div>
+      <div><strong>Modelo:</strong> <span id="viewModelo">—</span></div>
+      <div><strong>Placa:</strong> <span id="viewPlaca">—</span></div>
+      <div><strong>Ano:</strong> <span id="viewAno">—</span></div>
+      <div><strong>Cor:</strong> <span id="viewCor">—</span></div>
+    </div>
+  </div>
+
+  <div style="margin-top:12px;">
+    <label>Alterar foto do veículo</label>
+    <input id="veiculoFotoInput" type="file" accept="image/*" onchange="uploadFotoVeiculoFromPanel(event)">
+  </div>
+
+  <div style="margin-top:12px;">
+    <button onclick="carregarVeiculo()">Atualizar Dados</button>
+    <button onclick="window.location.href='painel.html'">Voltar</button>
+  </div>
+</div>
+</body>
+</html>

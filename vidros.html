@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vidros - ENAI</title>
+<link rel="stylesheet" href="style.css">
+<script src="app.js"></script>
+</head>
+<body>
+<header>
+<h2>ENAI - Soluções Inteligentes</h2>
+<div class="logo-header"><img src="img/logo.png" alt="Logo"></div>
+</header>
+<div class="container">
+<h1>Vidros</h1>
+<div style="margin-top:12px;">
+  <label>Vidro Dianteiro Esquerdo: <span id="v1pct">100%</span></label>
+  <input id="vidro1" class="slider" type="range" min="0" max="100" value="100" oninput="updateVidro(1)">
+  <label>Vidro Dianteiro Direito: <span id="v2pct">100%</span></label>
+  <input id="vidro2" class="slider" type="range" min="0" max="100" value="100" oninput="updateVidro(2)">
+  <label>Vidro Traseiro Esquerdo: <span id="v3pct">100%</span></label>
+  <input id="vidro3" class="slider" type="range" min="0" max="100" value="100" oninput="updateVidro(3)">
+  <label>Vidro Traseiro Direito: <span id="v4pct">100%</span></label>
+  <input id="vidro4" class="slider" type="range" min="0" max="100" value="100" oninput="updateVidro(4)">
+</div>
+<div style="margin-top:12px;">
+  <button onclick="window.location.href='painel.html'">Voltar</button>
+</div>
+</div>
+</body>
+</html>
