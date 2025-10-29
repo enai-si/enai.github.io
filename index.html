@@ -24,7 +24,7 @@
 <!-- Leaflet (OpenStreetMap) -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 <style>
 :root{
   --blue-1:#007bff;
@@ -128,7 +128,7 @@ button:hover{background:var(--blue-2);transform:translateY(-2px);}
 <div class="container">
   <!-- LOGIN -->
   <div id="loginPage" class="page active">
-    <h1>Login</h1>
+    <h1 class="text-4xl font-bold">Login</h1>
     <input id="loginEmail" type="email" placeholder="Email">
     <input id="loginSenha" type="password" placeholder="Senha">
     <div>
@@ -140,7 +140,7 @@ button:hover{background:var(--blue-2);transform:translateY(-2px);}
 
   <!-- CADASTRO -->
   <div id="cadastroPage" class="page">
-    <h1>Cadastro</h1>
+    <h1 class="text-4xl font-bold">Cadastro</h1>
     <input id="cadNome" placeholder="Nome completo">
     <input id="cadEmail" placeholder="Email">
     <input id="cadTel" placeholder="Telefone">
@@ -155,8 +155,8 @@ button:hover{background:var(--blue-2);transform:translateY(-2px);}
 
   <!-- PAINEL -->
   <div id="painelPage" class="page">
-    <h1>Painel do Veículo</h1>
-    <div style="margin-top:12px;">
+    <h1 class="text-4xl font-bold">Painel do Veículo</h1>
+    <div style="margin-top:12px;" class="flex flex-col flex-wrap md:flex-row">
       <button onclick="showPage('perfilPage')">Meu Perfil</button>
       <button onclick="showPage('meuVeiculoPage')">Meu Veículo</button>
       <button onclick="showPage('travaPage')">Trava de Portas</button>
@@ -172,7 +172,7 @@ button:hover{background:var(--blue-2);transform:translateY(-2px);}
 
  <!-- PERFIL -->
   <div id="perfilPage" class="page">
-    <h1>Meu Perfil</h1>
+    <h1 class="text-4xl font-bold">Meu Perfil</h1>
     <label>Nome</label>
     <input id="perfilNome" placeholder="Nome completo">
     <label>Email</label>
@@ -212,7 +212,7 @@ button:hover{background:var(--blue-2);transform:translateY(-2px);}
 
 <!-- MEU VEÍCULO -->
   <div id="meuVeiculoPage" class="page">
-    <h1>Meu Veículo</h1>
+    <h1 class="text-4xl font-bold">Meu Veículo</h1>
     <div class="vehicle-card" style="margin-top:12px;">
       <img id="veiculoFoto" class="vehicle-img" src="" alt="Foto do veículo" style="display:none;">
       <div style="flex:1;">
@@ -235,7 +235,7 @@ button:hover{background:var(--blue-2);transform:translateY(-2px);}
 
     <!-- TRAVAS -->
   <div id="travaPage" class="page">
-    <h1>Trava de Portas</h1>
+    <h1 class="text-4xl font-bold">Trava de Portas</h1>
     <div style="margin-top:12px;">
       <div style="margin-bottom:8px;"><strong>Esq Dianteira:</strong> <span id="travaLed1" class="on">Fechada</span> <button onclick="toggleTrava(1)">Abrir</button></div>
       <div style="margin-bottom:8px;"><strong>Esq Traseira:</strong> <span id="travaLed2" class="on">Fechada</span> <button onclick="toggleTrava(2)">Abrir</button></div>
@@ -252,7 +252,7 @@ button:hover{background:var(--blue-2);transform:translateY(-2px);}
 
   <!-- VIDROS -->
   <div id="vidrosPage" class="page">
-    <h1>Vidros</h1>
+    <h1 class="text-4xl font-bold">Vidros</h1>
     <div style="margin-top:12px;">
       <label>Vidro Dianteiro Esquerdo: <span id="v1pct">100%</span></label>
       <input id="vidro1" class="slider" type="range" min="0" max="100" value="100" oninput="updateVidro(1)">
@@ -270,7 +270,7 @@ button:hover{background:var(--blue-2);transform:translateY(-2px);}
 
   <!-- MOTOR -->
   <div id="motorPage" class="page">
-    <h1>Motor</h1>
+    <h1 class="text-4xl font-bold">Motor</h1>
     <p>Status: <span id="motorStatus" class="off">Desligado</span></p>
     <div>
       <button onclick="toggleMotor()">Ligar/Desligar</button>
@@ -280,7 +280,7 @@ button:hover{background:var(--blue-2);transform:translateY(-2px);}
 
   <!-- AR -->
   <div id="arPage" class="page">
-    <h1>Ar Condicionado</h1>
+    <h1 class="text-4xl font-bold">Ar Condicionado</h1>
     <p>Status: <span id="statusAr" class="off">Desligado</span></p>
     <div>
       <button onclick="toggleAr()">Ligar/Desligar</button>
@@ -293,7 +293,7 @@ button:hover{background:var(--blue-2);transform:translateY(-2px);}
 
   <!-- RADIO -->
   <div id="radioPage" class="page">
-    <h1>Rádio</h1>
+    <h1 class="text-4xl font-bold">Rádio</h1>
     <p>Frequência: <span id="radioFreq">99.5</span> MHz</p>
     <div>
       <button onclick="alterarFreq(-0.1)">-</button>
@@ -304,14 +304,14 @@ button:hover{background:var(--blue-2);transform:translateY(-2px);}
 
   <!-- GPS -->
   <div id="gpsPage" class="page">
-    <h1>GPS - Localização Atual</h1>
+    <h1 class="text-4xl font-bold">GPS - Localização Atual</h1>
     <div id="mapid">Carregando mapa...</div>
     <button style="margin-top:12px;" onclick="showPage('painelPage')">Voltar</button>
   </div>
 
   <!-- MANUTENÇÃO -->
   <div id="manutPage" class="page">
-    <h1>Plano de Manutenção</h1>
+    <h1 class="text-4xl font-bold">Plano de Manutenção</h1>
     <p>Controle de revisões e alertas do veículo:</p>
     <ul>
       <li>Troca de óleo – a cada 10.000 km</li>
@@ -554,7 +554,3 @@ auth.onAuthStateChanged(user=>{
 </script>
 </body>
 </html>
-
-
-
-
