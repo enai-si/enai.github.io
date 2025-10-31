@@ -498,66 +498,63 @@ function uploadFotoVeiculoFromPanel(event) {
   const file = event.target.files[0];
   const preview = document.getElementById('veiculoFoto');
 
-  // Mostra a miniatura local imediatamente
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      preview.src = e.target.result;
-      preview.style.display = 'block';
-    };
-    reader.readAsDataURL(file);
-  }
+  if (!file) return;
 
-  // Envia pro Firebase se o usuário estiver logado
-  if (!file || !usuarioAtual) return;
+  // Mostra preview local imediatamente
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    preview.src = e.target.result;
+    preview.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+
+  // Envia pro Firebase e salva o link no Firestore
+  if (!usuarioAtual) return;
   const uid = usuarioAtual.uid;
   const storageRef = storage.ref('usuarios/' + uid + '/veiculo.jpg');
- 
+
   storageRef.put(file).then(() => {
     storageRef.getDownloadURL().then(url => {
+      // Mostra imagem
       preview.src = url;
       preview.style.display = 'block';
+
+      // Salva link da imagem no Firestore
+      db.collection('usuarios').doc(uid).update({
+        veiculoFotoURL: url
+      }).then(() => {
+        console.log("✅ Foto do veículo atualizada com sucesso!");
+      }).catch(err => {
+        console.error("Erro ao salvar URL da foto:", err);
+      });
     });
   });
 }
 
-// Carregar dados do veículo
-function carregarVeiculo(){
-  if(!usuarioAtual) return;
+// Carrega dados do veículo + foto
+function carregarVeiculo() {
+  if (!usuarioAtual) return;
   const uid = usuarioAtual.uid;
-  db.ref('usuarios/'+uid).once('value').then(snap=>{
-    const d = snap.val();
-    if(!d) return;
-    document.getElementById('perfilNome').value = d.nome || '';
-    document.getElementById('perfilEmail').value = d.email || '';
-    document.getElementById('perfilTel').value = d.telefone || '';
-    document.getElementById('perfilCPF').value = d.cpf || '';
-    document.getElementById('perfilEndereco').value = d.endereco || '';
-    document.getElementById('perfilFabricante').value = d.fabricante || '';
-    document.getElementById('perfilModelo').value = d.modelo || '';
-    document.getElementById('perfilPlaca').value = d.placa || '';
-    document.getElementById('perfilAno').value = d.ano || '';
-    document.getElementById('perfilCor').value = d.cor || '';
 
-    // Atualizar painel veículo
-    document.getElementById('viewFabricante').textContent = d.fabricante||'—';
-    document.getElementById('viewModelo').textContent = d.modelo||'—';
-    document.getElementById('viewPlaca').textContent = d.placa||'—';
-    document.getElementById('viewAno').textContent = d.ano||'—';
-    document.getElementById('viewCor').textContent = d.cor||'—';
+  db.collection('usuarios').doc(uid).get().then(doc => {
+    if (!doc.exists) return;
+    const data = doc.data();
 
-    // Carregar fotos
-    const storageRef = storage.ref('usuarios/'+uid+'/veiculo.jpg');
-    storageRef.getDownloadURL().then(url=>{
-      document.getElementById('veiculoFoto').src=url;
-      document.getElementById('veiculoFoto').style.display='block';
-    }).catch(()=>{ document.getElementById('veiculoFoto').style.display='none'; });
+    document.getElementById('viewFabricante').textContent = data.fabricante || '—';
+    document.getElementById('viewModelo').textContent = data.modelo || '—';
+    document.getElementById('viewPlaca').textContent = data.placa || '—';
+    document.getElementById('viewAno').textContent = data.ano || '—';
+    document.getElementById('viewCor').textContent = data.cor || '—';
 
-    storage.ref('usuarios/'+uid+'/perfil.jpg').getDownloadURL().then(url=>{
-      document.getElementById('perfilFotoPreview').src=url;
-      document.getElementById('perfilFotoPreview').style.display='block';
-    }).catch(()=>{ document.getElementById('perfilFotoPreview').style.display='none'; });
-  });
+    const img = document.getElementById('veiculoFoto');
+    if (data.veiculoFotoURL) {
+      img.src = data.veiculoFotoURL;
+      img.style.display = 'block';
+    } else {
+      img.src = '';
+      img.style.display = 'none';
+    }
+  }).catch(err => console.error(err));
 }
 
 // === GPS FUNCIONAL (OpenStreetMap / Leaflet) ===
