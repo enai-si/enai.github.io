@@ -480,6 +480,40 @@ function salvarPerfilCompleto(){
   alert("Perfil salvo!");
 }
 
+function carregarPerfil() {
+  if (!usuarioAtual) return;
+  const uid = usuarioAtual.uid;
+
+  db.ref('usuarios/' + uid).once('value').then(snapshot => {
+    const data = snapshot.val();
+    if (!data) return;
+
+    // Perfil
+    document.getElementById('perfilNome').value = data.nome || '';
+    document.getElementById('perfilEmail').value = data.email || '';
+    document.getElementById('perfilTel').value = data.telefone || '';
+    document.getElementById('perfilCPF').value = data.cpf || '';
+    document.getElementById('perfilEndereco').value = data.endereco || '';
+
+    // Veículo
+    document.getElementById('perfilFabricante').value = data.fabricante || '';
+    document.getElementById('perfilModelo').value = data.modelo || '';
+    document.getElementById('perfilPlaca').value = data.placa || '';
+    document.getElementById('perfilAno').value = data.ano || '';
+    document.getElementById('perfilCor').value = data.cor || '';
+
+    // Foto do veículo
+    const veiculoImg = document.getElementById('veiculoFoto');
+    if (data.veiculoFotoURL) {
+      veiculoImg.src = data.veiculoFotoURL;
+      veiculoImg.style.display = 'block';
+    } else {
+      veiculoImg.src = '';
+      veiculoImg.style.display = 'none';
+    }
+  });
+}
+
 // Fotos
 function uploadFotoPerfil(event){
   const file = event.target.files[0];
@@ -494,39 +528,21 @@ function uploadFotoPerfil(event){
   });
 }
 
-function uploadFotoVeiculoFromPanel() {
+function uploadFotoVeiculoFromPanel(event) {
   const file = event.target.files[0];
   const preview = document.getElementById('veiculoFoto');
+  if (!file || !usuarioAtual) return;
 
-  if (!file) return;
-
-  // Mostra preview local imediatamente
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    preview.src = e.target.result;
-    preview.style.display = 'block';
-  };
-  reader.readAsDataURL(file);
-
-  // Envia pro Firebase e salva o link no Firestore
-  if (!usuarioAtual) return;
   const uid = usuarioAtual.uid;
   const storageRef = storage.ref('usuarios/' + uid + '/veiculo.jpg');
 
   storageRef.put(file).then(() => {
     storageRef.getDownloadURL().then(url => {
-      // Mostra imagem
       preview.src = url;
       preview.style.display = 'block';
 
-      // Salva link da imagem no Firestore
-      db.collection('usuarios').doc(uid).update({
-        veiculoFotoURL: url
-      }).then(() => {
-        console.log("✅ Foto do veículo atualizada com sucesso!");
-      }).catch(err => {
-        console.error("Erro ao salvar URL da foto:", err);
-      });
+      // Salva URL no Realtime Database
+      db.ref('usuarios/' + uid + '/veiculoFotoURL').set(url);
     });
   });
 }
@@ -536,9 +552,9 @@ function carregarVeiculo() {
   if (!usuarioAtual) return;
   const uid = usuarioAtual.uid;
 
-  db.collection('usuarios').doc(uid).get().then(doc => {
-    if (!doc.exists) return;
-    const data = doc.data();
+  db.ref('usuarios/' + uid).once('value').then(snapshot => {
+    const data = snapshot.val();
+    if (!data) return;
 
     document.getElementById('viewFabricante').textContent = data.fabricante || '—';
     document.getElementById('viewModelo').textContent = data.modelo || '—';
@@ -554,7 +570,7 @@ function carregarVeiculo() {
       img.src = '';
       img.style.display = 'none';
     }
-  }).catch(err => console.error(err));
+  });
 }
 
 // === GPS FUNCIONAL (OpenStreetMap / Leaflet) ===
