@@ -165,6 +165,7 @@ button:hover{background:var(--blue-2);transform:translateY(-2px);}
       <button onclick="showPage('arPage')">Ar Condicionado</button>
       <button onclick="showPage('radioPage')">Rádio</button>
       <button onclick="abrirGPS()">GPS</button>
+      <button onclick="showPage('vozPage')">Comando de Voz</button>
       <button onclick="showPage('manutPage')">Plano de Manutenção</button>
       <button onclick="logout()">Sair</button>
     </div>
@@ -307,6 +308,33 @@ button:hover{background:var(--blue-2);transform:translateY(-2px);}
     <h1 class="text-4xl font-bold">GPS - Localização Atual</h1>
     <div id="mapid">Carregando mapa...</div>
     <button style="margin-top:12px;" onclick="showPage('painelPage')">Voltar</button>
+  </div>
+
+  <!-- COMANDO DE VOZ -->
+  <div id="vozPage" class="page">
+    <h1 class="text-4xl font-bold">Comando de Voz</h1>
+    <p>Fale comandos iniciando com <strong>"ENAI"</strong> para controlar o veículo.</p>
+
+    <div style="margin-top:10px;">
+      <button id="btnVoz" onclick="toggleReconhecimento()">🎤 Iniciar Comando de Voz</button>
+      <p id="vozStatus" class="muted" style="margin-top:8px;">Aguardando comando...</p>
+    </div>
+
+    <div style="margin-top:20px;">
+      <h2 style="font-size:18px;">📊 Estado Atual do Veículo</h2>
+      <ul style="list-style:none; padding:0;">
+        <li><strong>Motor:</strong> <span id="vozMotor"></span></li>
+        <li><strong>Ar Condicionado:</strong> <span id="vozAr"></span> — <span id="vozTemp"></span>°C</li>
+        <li><strong>Rádio:</strong> <span id="vozRadio"></span> MHz</li>
+        <li><strong>Travas:</strong> <span id="vozTravas"></span></li>
+        <li><strong>Vidros:</strong> <span id="vozVidros"></span></li>
+      </ul>
+    </div>
+
+    <div style="margin-top:12px;">
+      <button onclick="atualizarResumoVoz()">🔄 Atualizar Estado</button>
+      <button onclick="showPage('painelPage')">Voltar</button>
+    </div>
   </div>
 
   <!-- MANUTENÇÃO -->
@@ -550,10 +578,180 @@ auth.onAuthStateChanged(user=>{
   } else {
     showPage('loginPage');
   }
+
+// === COMANDO DE VOZ (com sincronização total + fala) ===
+let reconhecimento = null;
+let ouvindo = false;
+
+function falar(texto) {
+  const msg = new SpeechSynthesisUtterance(texto);
+  msg.lang = "pt-BR";
+  msg.rate = 1;
+  msg.pitch = 1;
+  const vozBR = speechSynthesis.getVoices().find(v => v.lang === "pt-BR");
+  if (vozBR) msg.voice = vozBR;
+  speechSynthesis.speak(msg);
+}
+
+// 🔄 Atualiza o painel de status lendo os valores atuais do DOM
+function atualizarResumoVoz() {
+  // Motor
+  const motorStatus = document.getElementById('motorStatus');
+  document.getElementById('vozMotor').textContent =
+    motorStatus ? motorStatus.textContent : "Indefinido";
+
+  // Ar-condicionado
+  const arStatus = document.getElementById('arStatus');
+  const tempLabel = document.getElementById('tempLabel');
+  document.getElementById('vozAr').textContent = arStatus ? arStatus.textContent : "Indefinido";
+  document.getElementById('vozTemp').textContent = tempLabel ? tempLabel.textContent.replace("°C", "") : "-";
+
+  // Rádio
+  const radioFreq = document.getElementById('radioFreq');
+  document.getElementById('vozRadio').textContent = radioFreq ? radioFreq.textContent : "-";
+
+  // Travas
+  let travasFechadas = true;
+  for (let i = 1; i <= 5; i++) {
+    const trava = document.getElementById('travaLed' + i);
+    if (trava && trava.textContent !== 'Fechada') travasFechadas = false;
+  }
+  document.getElementById('vozTravas').textContent = travasFechadas ? "Todas Fechadas" : "Alguma Aberta";
+
+  // Vidros
+  const vidros = [];
+  for (let i = 1; i <= 4; i++) {
+    const pct = document.getElementById('v' + i + 'pct');
+    if (pct) vidros.push(pct.textContent);
+  }
+  document.getElementById('vozVidros').textContent = vidros.join(' / ');
+}
+
+// Escuta eventos nas outras abas e mantém sincronizado automaticamente
+const observador = new MutationObserver(() => atualizarResumoVoz());
+window.addEventListener('load', () => {
+  const alvo = document.body;
+  observador.observe(alvo, { childList: true, subtree: true, characterData: true });
+  atualizarResumoVoz();
+});
+
+// 🎙️ Controle do reconhecimento de voz
+function toggleReconhecimento() {
+  if (!('webkitSpeechRecognition' in window)) {
+    alert("Reconhecimento de voz não é suportado neste navegador.");
+    return;
+  }
+
+  if (!reconhecimento) {
+    reconhecimento = new webkitSpeechRecognition();
+    reconhecimento.lang = "pt-BR";
+    reconhecimento.continuous = false;
+    reconhecimento.interimResults = false;
+
+    reconhecimento.onstart = () => {
+      ouvindo = true;
+      document.getElementById('vozStatus').textContent = "🎧 Ouvindo... diga 'ENAI' seguido do comando.";
+      document.getElementById('btnVoz').textContent = "🛑 Parar Reconhecimento";
+      falar("Ouvindo. Pode falar, iniciando com ENAI.");
+    };
+
+    reconhecimento.onend = () => {
+      ouvindo = false;
+      document.getElementById('vozStatus').textContent = "Aguardando comando...";
+      document.getElementById('btnVoz').textContent = "🎤 Iniciar Comando de Voz";
+    };
+
+    reconhecimento.onerror = (e) => {
+      ouvindo = false;
+      document.getElementById('vozStatus').textContent = "Erro: " + e.error;
+      falar("Ocorreu um erro no reconhecimento de voz.");
+    };
+
+    reconhecimento.onresult = (event) => {
+      const texto = event.results[0][0].transcript.toLowerCase();
+      document.getElementById('vozStatus').textContent = "Você disse: " + texto;
+      processarComandoVoz(texto);
+      atualizarResumoVoz();
+    };
+  }
+
+  if (ouvindo) reconhecimento.stop();
+  else reconhecimento.start();
+}
+
+// 📢 Interpreta e executa os comandos de voz
+function processarComandoVoz(frase) {
+  if (!frase.includes("enai")) {
+    falar("Diga ENAI antes do comando.");
+    return;
+  }
+
+  // MOTOR
+  if (frase.includes("ligar o motor") || frase.includes("ligar motor")) {
+    toggleMotor(); falar("Motor ligado.");
+  } else if (frase.includes("desligar o motor") || frase.includes("desligar motor")) {
+    toggleMotor(); falar("Motor desligado.");
+  }
+
+  // AR
+  else if (frase.includes("ligar o ar") || frase.includes("ligar ar")) {
+    toggleAr(); falar("Ar-condicionado ligado.");
+  } else if (frase.includes("desligar o ar") || frase.includes("desligar ar")) {
+    toggleAr(); falar("Ar-condicionado desligado.");
+  } else if (frase.includes("aumentar temperatura")) {
+    alterarTemp(1); falar("Temperatura aumentada.");
+  } else if (frase.includes("diminuir temperatura") || frase.includes("baixar temperatura")) {
+    alterarTemp(-1); falar("Temperatura reduzida.");
+  }
+
+  // RÁDIO
+  else if (frase.includes("aumentar rádio") || frase.includes("subir rádio")) {
+    alterarFreq(0.1); falar("Aumentando frequência do rádio.");
+  } else if (frase.includes("diminuir rádio") || frase.includes("baixar rádio")) {
+    alterarFreq(-0.1); falar("Diminuindo frequência do rádio.");
+  }
+
+  // TRAVAS
+  else if (frase.includes("abrir todas as portas") || frase.includes("abrir portas")) {
+    abrirTudo(); falar("Abrindo todas as portas.");
+  } else if (frase.includes("fechar todas as portas") || frase.includes("fechar portas")) {
+    fecharTudo(); falar("Fechando todas as portas.");
+  }
+
+  // VIDROS
+  else if (frase.includes("abrir todos os vidros")) {
+    for (let i = 1; i <= 4; i++) {
+      document.getElementById('vidro' + i).value = 100;
+      updateVidro(i);
+    }
+    falar("Abrindo todos os vidros.");
+  } else if (frase.includes("fechar todos os vidros")) {
+    for (let i = 1; i <= 4; i++) {
+      document.getElementById('vidro' + i).value = 0;
+      updateVidro(i);
+    }
+    falar("Fechando todos os vidros.");
+  }
+
+  else if (frase.includes("abrir vidro")) {
+    const match = frase.match(/vidro.*(\d+)%/);
+    const pct = match ? parseInt(match[1]) : 100;
+    for (let i = 1; i <= 4; i++) {
+      document.getElementById('vidro' + i).value = pct;
+      updateVidro(i);
+    }
+    falar(`Abrindo vidros em ${pct} por cento.`);
+  } else if (frase.includes("fechar vidro")) {
+    for (let i = 1; i <= 4; i++) {
+      document.getElementById('vidro' + i).value = 0;
+      updateVidro(i);
+    }
+    falar("Fechando vidros completamente.");
+  } else {
+    falar("Comando não reconhecido.");
+  }
+}
 });
 </script>
 </body>
 </html>
-
-
-
