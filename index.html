@@ -520,7 +520,6 @@ function uploadFotoVeiculoFromPanel(event) {
       preview.style.display = 'block';
 
       // Salva link da imagem no Firestore
-      db.collection('usuarios').doc(uid).update({
         veiculoFotoURL: url
       }).then(() => {
         console.log("✅ Foto do veículo atualizada com sucesso!");
@@ -535,8 +534,6 @@ function uploadFotoVeiculoFromPanel(event) {
 function carregarVeiculo() {
   if (!usuarioAtual) return;
   const uid = usuarioAtual.uid;
-
-  db.collection('usuarios').doc(uid).get().then(doc => {
     if (!doc.exists) return;
     const data = doc.data();
 
@@ -769,3 +766,4 @@ function processarComandoVoz(frase) {
 </script>
 </body>
 </html>
+
