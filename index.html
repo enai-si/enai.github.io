@@ -495,7 +495,7 @@ function carregarPerfil() {
     document.getElementById('perfilCPF').value = data.cpf || '';
     document.getElementById('perfilEndereco').value = data.endereco || '';
 
-    // Veículo
+    // Dados do veículo (opcional, se quiser mostrar também)
     document.getElementById('perfilFabricante').value = data.fabricante || '';
     document.getElementById('perfilModelo').value = data.modelo || '';
     document.getElementById('perfilPlaca').value = data.placa || '';
@@ -510,6 +510,16 @@ function carregarPerfil() {
     } else {
       veiculoImg.src = '';
       veiculoImg.style.display = 'none';
+    }
+
+    // Foto do perfil (opcional)
+    const perfilImg = document.getElementById('perfilFotoPreview');
+    if (data.perfilFotoURL) {
+      perfilImg.src = data.perfilFotoURL;
+      perfilImg.style.display = 'block';
+    } else {
+      perfilImg.src = '';
+      perfilImg.style.display = 'none';
     }
   });
 }
@@ -596,15 +606,12 @@ function abrirGPS(){
 }
 
 // Monitorar login
-auth.onAuthStateChanged(user=>{
+auth.onAuthStateChanged(user => {
   usuarioAtual = user;
   if(user){
-    // Só mostrar painel se já estivermos na página login
-    const currentPage = document.querySelector('.page.active').id;
-    if(currentPage === 'loginPage'){
-      showPage('painelPage');
-      carregarVeiculo();
-    }
+    showPage('painelPage');
+    carregarVeiculo();
+    carregarPerfil(); // <--- adiciona aqui
   } else {
     showPage('loginPage');
   }
