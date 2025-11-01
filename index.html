@@ -215,7 +215,7 @@ button:hover{background:var(--blue-2);transform:translateY(-2px);}
 <div id="meuVeiculoPage" class="page">
   <h1 class="text-4xl font-bold">Meu Veículo</h1>
   <div class="vehicle-card" style="margin-top:12px; display: flex; align-items: center; gap: 12px;">
-    <img id="veiculoFoto" src="" alt="Foto do veículo" style="width:100%; height:100%; object-fit:cover; display:none;">
+    <img id="veiculoFoto" src="" alt="Foto do veículo" style="display:none; width:120px; height:auto; border-radius:8px; margin-top:10px;">
     <div style="flex: 1;">
       <div><strong>Fabricante:</strong> <span id="viewFabricante">—</span></div>
       <div><strong>Modelo:</strong> <span id="viewModelo">—</span></div>
@@ -227,7 +227,7 @@ button:hover{background:var(--blue-2);transform:translateY(-2px);}
 
   <div style="margin-top:12px;">
     <label>Alterar foto do veículo</label><br>
-    <input id="veiculoFotoInput" type="file" accept="image/*" onchange="uploadFotoVeiculoFromPanel(event)">
+    <input type="file" id="fotoVeiculoInput" accept="image/*" onchange="uploadFotoVeiculoFromPanel(event)">
   </div>
 
   <div style="margin-top:12px;">
@@ -539,19 +539,33 @@ function uploadFotoPerfil(event){
 
 function uploadFotoVeiculoFromPanel(event) {
   const file = event.target.files[0];
-  const preview = document.getElementById('veiculoFoto');
-  if (!file || !usuarioAtual) return;
+  if (!file || !usuarioAtual) {
+    alert("Selecione uma imagem e faça login antes de enviar.");
+    return;
+  }
 
   const uid = usuarioAtual.uid;
-  const storageRef = storage.ref('usuarios/' + uid + '/veiculo.jpg');
+  const preview = document.getElementById("veiculoFoto"); // imagem no HTML
 
+  // 1️⃣ Mostra a miniatura localmente antes do upload
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    preview.src = e.target.result;
+    preview.style.display = "block";
+  };
+  reader.readAsDataURL(file);
+
+  // 2️⃣ Faz upload pro Firebase Storage
+  const storageRef = firebase.storage().ref("usuarios/" + uid + "/veiculo.jpg");
   storageRef.put(file).then(() => {
-    storageRef.getDownloadURL().then(url => {
-      preview.src = url;
-      preview.style.display = 'block';
-      // A imagem automaticamente vai se encaixar dentro do quadrado
-      db.ref('usuarios/' + uid + '/veiculoFotoURL').set(url);
+    // 3️⃣ Depois pega o link público e salva no Realtime Database
+    storageRef.getDownloadURL().then((url) => {
+      firebase.database().ref("usuarios/" + uid + "/veiculoFotoURL").set(url);
+      console.log("Foto do veículo enviada com sucesso:", url);
     });
+  }).catch((error) => {
+    console.error("Erro ao enviar a foto do veículo:", error);
+    alert("Erro ao enviar a imagem. Tente novamente.");
   });
 }
 
