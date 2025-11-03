@@ -202,9 +202,6 @@ button:hover{background:var(--blue-2);transform:translateY(-2px);}
     </div>
     <label>Cor</label>
     <input id="perfilCor" placeholder="Cor">
-    <label>Foto do veículo (opcional)</label>
-    <input id="perfilFotoInput" type="file" accept="image/*" onchange="uploadFotoPerfil(event)">
-    <img id="perfilFotoPreview" src="" style="display:none; width:180px; height:120px; object-fit:cover; border-radius:8px; margin-top:8px;">
     <div style="margin-top:10px;">
       <button onclick="salvarPerfilCompleto()">Salvar</button>
       <button onclick="showPage('painelPage')">Voltar</button>
@@ -236,22 +233,42 @@ button:hover{background:var(--blue-2);transform:translateY(-2px);}
   </div>
 </div>
 
-    <!-- TRAVAS -->
-  <div id="travaPage" class="page">
-    <h1 class="text-4xl font-bold">Trava de Portas</h1>
-    <div style="margin-top:12px;">
-      <div style="margin-bottom:8px;"><strong>Esq Dianteira:</strong> <span id="travaLed1" class="on">Fechada</span> <button onclick="toggleTrava(1)">Abrir</button></div>
-      <div style="margin-bottom:8px;"><strong>Esq Traseira:</strong> <span id="travaLed2" class="on">Fechada</span> <button onclick="toggleTrava(2)">Abrir</button></div>
-      <div style="margin-bottom:8px;"><strong>Dir Dianteira:</strong> <span id="travaLed3" class="on">Fechada</span> <button onclick="toggleTrava(3)">Abrir</button></div>
-      <div style="margin-bottom:8px;"><strong>Dir Traseira:</strong> <span id="travaLed4" class="on">Fechada</span> <button onclick="toggleTrava(4)">Abrir</button></div>
-      <div style="margin-bottom:8px;"><strong>Porta-malas:</strong> <span id="travaLed5" class="on">Fechada</span> <button onclick="toggleTrava(5)">Abrir</button></div>
+   <!-- TRAVAS -->
+<div id="travaPage" class="page">
+  <h1 class="text-4xl font-bold">Trava de Portas</h1>
+  <div style="margin-top:12px;">
+    <div style="margin-bottom:8px;">
+      <strong>Esq Dianteira:</strong> 
+      <span id="travaLed1" class="on">Fechada</span> 
+      <button id="botaoTrava1" onclick="toggleTrava(1)">Abrir</button>
     </div>
-    <div style="margin-top:12px;">
-      <button onclick="abrirTudo()">Abrir Tudo</button>
-      <button onclick="fecharTudo()">Fechar Tudo</button>
-      <button onclick="showPage('painelPage')">Voltar</button>
+    <div style="margin-bottom:8px;">
+      <strong>Esq Traseira:</strong> 
+      <span id="travaLed2" class="on">Fechada</span> 
+      <button id="botaoTrava2" onclick="toggleTrava(2)">Abrir</button>
+    </div>
+    <div style="margin-bottom:8px;">
+      <strong>Dir Dianteira:</strong> 
+      <span id="travaLed3" class="on">Fechada</span> 
+      <button id="botaoTrava3" onclick="toggleTrava(3)">Abrir</button>
+    </div>
+    <div style="margin-bottom:8px;">
+      <strong>Dir Traseira:</strong> 
+      <span id="travaLed4" class="on">Fechada</span> 
+      <button id="botaoTrava4" onclick="toggleTrava(4)">Abrir</button>
+    </div>
+    <div style="margin-bottom:8px;">
+      <strong>Porta-malas:</strong> 
+      <span id="travaLed5" class="on">Fechada</span> 
+      <button id="botaoTrava5" onclick="toggleTrava(5)">Abrir</button>
     </div>
   </div>
+  <div style="margin-top:12px;">
+    <button onclick="abrirTudo()">Abrir Tudo</button>
+    <button onclick="fecharTudo()">Fechar Tudo</button>
+    <button onclick="showPage('painelPage')">Voltar</button>
+  </div>
+</div>
 
   <!-- VIDROS -->
   <div id="vidrosPage" class="page">
@@ -272,27 +289,40 @@ button:hover{background:var(--blue-2);transform:translateY(-2px);}
   </div>
 
   <!-- MOTOR -->
-  <div id="motorPage" class="page">
-    <h1 class="text-4xl font-bold">Motor</h1>
-    <p>Status: <span id="motorStatus" class="off">Desligado</span></p>
-    <div>
-      <button onclick="toggleMotor()">Ligar/Desligar</button>
-      <button onclick="showPage('painelPage')">Voltar</button>
-    </div>
+<div id="motorPage" class="page">
+  <h1 class="text-4xl font-bold">Motor</h1>
+  <p>Status: <span id="motorStatus" class="off">Desligado</span></p>
+
+  <div style="margin-top: 16px;">
+    <!-- Botão com ícone -->
+    <button id="motorPower" onclick="toggleMotor()"
+      style="background-color:#003366; border:none; border-radius:50%; padding:18px; cursor:pointer; transition: background-color 0.3s;">
+      <img src="70051.png" alt="Power" width="80" height="80">
+    </button>
+
+    <button style="margin-left:12px;" onclick="showPage('painelPage')">Voltar</button>
   </div>
+</div>
 
   <!-- AR -->
-  <div id="arPage" class="page">
-    <h1 class="text-4xl font-bold">Ar Condicionado</h1>
-    <p>Status: <span id="statusAr" class="off">Desligado</span></p>
-    <div>
-      <button onclick="toggleAr()">Ligar/Desligar</button>
-      <button onclick="alterarTemp(-1)">-</button>
-      <span style="margin:0 12px">Temperatura: <strong><span id="tempAr">22</span>°C</strong></span>
-      <button onclick="alterarTemp(1)">+</button>
-      <button style="margin-left:12px" onclick="showPage('painelPage')">Voltar</button>
-    </div>
+<div id="arPage" class="page">
+  <h1 class="text-4xl font-bold">Ar Condicionado</h1>
+  <p>Status: <span id="statusAr" class="off">Desligado</span></p>
+
+  <div style="margin-top:16px;">
+    <!-- Botão com ícone -->
+    <button id="arPower" onclick="toggleAr()"
+      style="background-color:#444; border:none; border-radius:50%; padding:18px; cursor:pointer; transition: background-color 0.3s;">
+      <img src="70051.png" alt="Power" width="40" height="40">
+    </button>
+
+    <button onclick="alterarTemp(-1)" style="margin-left:16px;">-</button>
+    <span style="margin:0 12px">Temperatura: <strong><span id="tempAr">22</span>°C</strong></span>
+    <button onclick="alterarTemp(1)">+</button>
+
+    <button style="margin-left:12px;" onclick="showPage('painelPage')">Voltar</button>
   </div>
+</div>
 
   <!-- RADIO -->
   <div id="radioPage" class="page">
@@ -423,19 +453,49 @@ function resetarSenha(){
 }
 
 // Funções Painel
-function toggleMotor(){
+function toggleMotor() {
   motorLigado = !motorLigado;
-  document.getElementById('motorStatus').textContent = motorLigado ? 'Ligado' : 'Desligado';
-  document.getElementById('motorStatus').className = motorLigado ? 'on' : 'off';
+
+  const status = document.getElementById('motorStatus');
+  const botao = document.getElementById('motorPower');
+
+  if (motorLigado) {
+    status.textContent = 'Ligado';
+    status.className = 'on';
+    botao.style.backgroundColor = '#3399ff'; // Azul claro
+  } else {
+    status.textContent = 'Desligado';
+    status.className = 'off';
+    botao.style.backgroundColor = '#003366'; // Azul escuro
+  }
 }
-function toggleAr(){
+function toggleAr() {
   arLigado = !arLigado;
-  document.getElementById('statusAr').textContent = arLigado ? 'Ligado' : 'Desligado';
-  document.getElementById('statusAr').className = arLigado ? 'on' : 'off';
+
+  const status = document.getElementById('statusAr');
+  const botao = document.getElementById('arPower');
+
+  if (arLigado) {
+    status.textContent = 'Ligado';
+    status.className = 'on';
+    botao.style.backgroundColor = '#33ccff'; // Azul claro
+  } else {
+    status.textContent = 'Desligado';
+    status.className = 'off';
+    botao.style.backgroundColor = '#444'; // Cinza escuro
+  }
 }
-function alterarTemp(delta){
-  tempAtual += delta;
-  document.getElementById('tempAr').textContent = tempAtual;
+function alterarTemp(valor) {
+  // Garante que estamos sempre lidando com número
+  const tempSpan = document.getElementById('tempAr');
+  temperatura = parseInt(tempSpan.textContent) + valor;
+
+  // Limita a temperatura
+  if (temperatura < 14) temperatura = 14;
+  if (temperatura > 28) temperatura = 28;
+
+  // Atualiza na tela
+  tempSpan.textContent = temperatura;
 }
 function alterarFreq(delta){
   let freq = parseFloat(document.getElementById('radioFreq').textContent);
@@ -449,17 +509,41 @@ function updateVidro(n){
   document.getElementById('v'+n+'pct').textContent = val + "%";
 }
 
-// Travas
-function toggleTrava(n){
-  const el = document.getElementById('travaLed'+n);
-  if(el.textContent==='Fechada'){
-    el.textContent='Aberta'; el.className='off';
+/// Travas
+function toggleTrava(n) {
+  const el = document.getElementById('travaLed' + n);
+  const botao = document.getElementById('botaoTrava' + n);
+
+  if (el.textContent === 'Fechada') {
+    el.textContent = 'Aberta';
+    el.className = 'off';
+    botao.textContent = 'Fechar';
   } else {
-    el.textContent='Fechada'; el.className='on';
+    el.textContent = 'Fechada';
+    el.className = 'on';
+    botao.textContent = 'Abrir';
   }
 }
-function abrirTudo(){ for(let i=1;i<=5;i++){ document.getElementById('travaLed'+i).textContent='Aberta'; document.getElementById('travaLed'+i).className='off'; }}
-function fecharTudo(){ for(let i=1;i<=5;i++){ document.getElementById('travaLed'+i).textContent='Fechada'; document.getElementById('travaLed'+i).className='on'; }}
+
+function abrirTudo() {
+  for (let i = 1; i <= 5; i++) {
+    const el = document.getElementById('travaLed' + i);
+    const botao = document.getElementById('botaoTrava' + i);
+    el.textContent = 'Aberta';
+    el.className = 'off';
+    botao.textContent = 'Fechar';
+  }
+}
+
+function fecharTudo() {
+  for (let i = 1; i <= 5; i++) {
+    const el = document.getElementById('travaLed' + i);
+    const botao = document.getElementById('botaoTrava' + i);
+    el.textContent = 'Fechada';
+    el.className = 'on';
+    botao.textContent = 'Abrir';
+  }
+}
 
 // Perfil
 function salvarPerfilCompleto(){
