@@ -772,6 +772,7 @@ window.addEventListener('load', () => {
 function toggleReconhecimento() {
   if (!('webkitSpeechRecognition' in window)) {
     alert("Reconhecimento de voz não é suportado neste navegador.");
+    window.toggleReconhecimento = toggleReconhecimento;
     return;
   }
 
@@ -888,4 +889,5 @@ function processarComandoVoz(frase) {
 </script>
 </body>
 </html>
+
 
