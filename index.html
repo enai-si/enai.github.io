@@ -343,31 +343,31 @@ button:hover{background:var(--blue-2);transform:translateY(-2px);}
   </div>
 
   <!-- COMANDO DE VOZ -->
-  <div id="vozPage" class="page">
-    <h1 class="text-4xl font-bold">Comando de Voz</h1>
-    <p>Fale comandos iniciando com <strong>"ENAI"</strong> para controlar o veículo.</p>
+<div id="vozPage" class="page">
+  <h1 class="text-4xl font-bold">Comando de Voz</h1>
+  <p>Fale comandos iniciando com <strong>"ENAI"</strong> para controlar o veículo.</p>
 
-    <div style="margin-top:10px;">
-      <button id="btnVoz" onclick="toggleReconhecimento()">🎤 Iniciar Comando de Voz</button>
-      <p id="vozStatus" class="muted" style="margin-top:8px;">Aguardando comando...</p>
-    </div>
-
-    <div style="margin-top:20px;">
-      <h2 style="font-size:18px;">📊 Estado Atual do Veículo</h2>
-      <ul style="list-style:none; padding:0;">
-        <li><strong>Motor:</strong> <span id="vozMotor"></span></li>
-        <li><strong>Ar Condicionado:</strong> <span id="vozAr"></span> — <span id="vozTemp"></span>°C</li>
-        <li><strong>Rádio:</strong> <span id="vozRadio"></span> MHz</li>
-        <li><strong>Travas:</strong> <span id="vozTravas"></span></li>
-        <li><strong>Vidros:</strong> <span id="vozVidros"></span></li>
-      </ul>
-    </div>
-
-    <div style="margin-top:12px;">
-      <button onclick="atualizarResumoVoz()">🔄 Atualizar Estado</button>
-      <button onclick="showPage('painelPage')">Voltar</button>
-    </div>
+  <div style="margin-top:10px;">
+    <button id="btnVoz">🎤 Iniciar Comando de Voz</button>
+    <p id="vozStatus" class="muted" style="margin-top:8px;">Aguardando comando...</p>
   </div>
+
+  <div style="margin-top:20px;">
+    <h2 style="font-size:18px;">📊 Estado Atual do Veículo</h2>
+    <ul style="list-style:none; padding:0;">
+      <li><strong>Motor:</strong> <span id="vozMotor"></span></li>
+      <li><strong>Ar Condicionado:</strong> <span id="vozAr"></span> — <span id="vozTemp"></span>°C</li>
+      <li><strong>Rádio:</strong> <span id="vozRadio"></span> MHz</li>
+      <li><strong>Travas:</strong> <span id="vozTravas"></span></li>
+      <li><strong>Vidros:</strong> <span id="vozVidros"></span></li>
+    </ul>
+  </div>
+
+  <div style="margin-top:12px;">
+    <button id="btnAtualizar">🔄 Atualizar Estado</button>
+    <button id="btnVoltar">Voltar</button>
+  </div>
+</div>
 
   <!-- MANUTENÇÃO -->
   <div id="manutPage" class="page">
@@ -889,5 +889,3 @@ function processarComandoVoz(frase) {
 </script>
 </body>
 </html>
-
-
