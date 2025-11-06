@@ -147,6 +147,7 @@ button:hover{background:var(--blue-2);transform:translateY(-2px);}
     <input id="cadCPF" placeholder="CPF">
     <input id="cadEndereco" placeholder="Endereço">
     <input id="cadSenha" type="password" placeholder="Senha">
+    <input id="cadKey" placeholder="Chave de Ativação">
     <div>
       <button onclick="cadastro()">Cadastrar</button>
       <button onclick="showPage('loginPage')">Voltar</button>
@@ -184,6 +185,8 @@ button:hover{background:var(--blue-2);transform:translateY(-2px);}
     <input id="perfilCPF" placeholder="CPF">
     <label>Endereço</label>
     <input id="perfilEndereco" placeholder="Endereço">
+    <label>Chave de Ativação</label>
+    <input id="perfilKey" placeholder="Chave de Ativação" disabled>
 
     <h1 style="font-size:18px; margin-top:12px;">Dados do Veículo</h1>
     <label>Fabricante</label>
@@ -426,20 +429,36 @@ function cadastro() {
   const nome = document.getElementById('cadNome').value;
   const email = document.getElementById('cadEmail').value;
   const senha = document.getElementById('cadSenha').value;
-  auth.createUserWithEmailAndPassword(email, senha)
-    .then(u => {
-      const uid = u.user.uid;
-      db.ref('usuarios/' + uid).set({
-        nome,
-        email,
-        telefone: document.getElementById('cadTel').value,
-        cpf: document.getElementById('cadCPF').value,
-        endereco: document.getElementById('cadEndereco').value
-      });
-      alert("Cadastro realizado!");
-      showPage('loginPage');
-    })
-    .catch(err => alert(err.message));
+  const chave = document.getElementById('cadKey').value;
+
+  if (!chave) {
+    alert("Por favor, insira sua chave de ativação.");
+    return;
+  }
+
+  // Verifica se a chave existe no banco antes do cadastro
+  db.ref('keys/' + chave).once('value').then(snapshot => {
+    if (!snapshot.exists()) {
+      alert("Chave inválida ou não registrada.");
+      return;
+    }
+
+    auth.createUserWithEmailAndPassword(email, senha)
+      .then(u => {
+        const uid = u.user.uid;
+        db.ref('usuarios/' + uid).set({
+          nome,
+          email,
+          telefone: document.getElementById('cadTel').value,
+          cpf: document.getElementById('cadCPF').value,
+          endereco: document.getElementById('cadEndereco').value,
+          key: chave
+        });
+        alert("Cadastro realizado com sucesso!");
+        showPage('loginPage');
+      })
+      .catch(err => alert(err.message));
+  });
 }
 
 function logout() {
@@ -464,9 +483,11 @@ auth.onAuthStateChanged(user => {
 function carregarPerfil() {
   if (!usuarioAtual) return;
   const uid = usuarioAtual.uid;
+
   db.ref('usuarios/' + uid).once('value').then(snapshot => {
     const data = snapshot.val();
     if (!data) return;
+
     document.getElementById('perfilNome').value = data.nome || '';
     document.getElementById('perfilEmail').value = data.email || '';
     document.getElementById('perfilTel').value = data.telefone || '';
@@ -477,6 +498,7 @@ function carregarPerfil() {
     document.getElementById('perfilPlaca').value = data.placa || '';
     document.getElementById('perfilAno').value = data.ano || '';
     document.getElementById('perfilCor').value = data.cor || '';
+    document.getElementById('perfilKey').value = data.key || '';
 
     const veiculoImg = document.getElementById('veiculoFoto');
     veiculoImg.src = data.veiculoFotoURL || '';
