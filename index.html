@@ -59,7 +59,7 @@ header h2{margin:0;font-size:20px;letter-spacing:0.2px;}
 .logo-header img{height:35px;border-radius:10px;}
 .wave-bg{
   position:absolute;top:0;left:0;width:100%;height:750px;
-  background:url('images.jpeg') no-repeat center top;
+  background:url('download.jfif') no-repeat center top;
   background-size:cover;z-index:0;
 }
 .container{
@@ -342,7 +342,6 @@ button:hover{background:var(--blue-2);transform:translateY(-2px);}
     <button style="margin-top:12px;" onclick="showPage('painelPage')">Voltar</button>
   </div>
 
-  <!-- COMANDO DE VOZ -->
 <!-- COMANDO DE VOZ -->
 <div id="vozPage" class="page">
   <h1 class="text-4xl font-bold">🎙️ Comando de Voz</h1>
@@ -398,6 +397,15 @@ let usuarioAtual = null;
 let motorLigado = false;
 let arLigado = false;
 let tempAtual = 22;
+
+const estadoCarro = {
+  motor: false,
+  ar: false,
+  temperatura: 22,
+  radio: 99.9,
+  travas: [true, true, true, true, true], // true = fechada
+  vidros: [0, 0, 0, 0] // valores 0–100
+};
 
 let recognition; // variável global para o reconhecimento de voz
 
@@ -480,8 +488,11 @@ function resetarSenha(){
 }
 
 // Funções Painel
-function toggleMotor() {
-  motorLigado = !motorLigado;
+function toggleMotor(forcar) {
+  if (typeof forcar === "boolean") motorLigado = forcar;
+  else motorLigado = !motorLigado;
+
+  estadoCarro.motor = motorLigado;
 
   const status = document.getElementById('motorStatus');
   const botao = document.getElementById('motorPower');
@@ -489,15 +500,18 @@ function toggleMotor() {
   if (motorLigado) {
     status.textContent = 'Ligado';
     status.className = 'on';
-    botao.style.backgroundColor = '#3399ff'; // Azul claro
+    botao.style.backgroundColor = '#3399ff';
   } else {
     status.textContent = 'Desligado';
     status.className = 'off';
-    botao.style.backgroundColor = '#003366'; // Azul escuro
+    botao.style.backgroundColor = '#003366';
   }
 }
-function toggleAr() {
-  arLigado = !arLigado;
+function toggleAr(forcar) {
+  if (typeof forcar === "boolean") arLigado = forcar;
+  else arLigado = !arLigado;
+
+  estadoCarro.ar = arLigado;
 
   const status = document.getElementById('statusAr');
   const botao = document.getElementById('arPower');
@@ -505,24 +519,21 @@ function toggleAr() {
   if (arLigado) {
     status.textContent = 'Ligado';
     status.className = 'on';
-    botao.style.backgroundColor = '#33ccff'; // Azul claro
+    botao.style.backgroundColor = '#33ccff';
   } else {
     status.textContent = 'Desligado';
     status.className = 'off';
-    botao.style.backgroundColor = '#444'; // Cinza escuro
+    botao.style.backgroundColor = '#444';
   }
 }
 function alterarTemp(valor) {
-  // Garante que estamos sempre lidando com número
   const tempSpan = document.getElementById('tempAr');
-  temperatura = parseInt(tempSpan.textContent) + valor;
-
-  // Limita a temperatura
+  let temperatura = parseInt(tempSpan.textContent) + valor;
   if (temperatura < 14) temperatura = 14;
   if (temperatura > 28) temperatura = 28;
 
-  // Atualiza na tela
   tempSpan.textContent = temperatura;
+  estadoCarro.temperatura = temperatura;
 }
 function alterarFreq(delta){
   let freq = parseFloat(document.getElementById('radioFreq').textContent);
@@ -560,6 +571,7 @@ function abrirTudo() {
     el.className = 'off';
     botao.textContent = 'Fechar';
   }
+  estadoCarro.travas = [false, false, false, false, false];
 }
 
 function fecharTudo() {
@@ -570,8 +582,14 @@ function fecharTudo() {
     el.className = 'on';
     botao.textContent = 'Abrir';
   }
+  estadoCarro.travas = [true, true, true, true, true];
 }
 
+function updateVidro(n) {
+  const val = parseInt(document.getElementById('vidro' + n).value);
+  document.getElementById('v' + n + 'pct').textContent = val + "%";
+  estadoCarro.vidros[n - 1] = val;
+}
 // Perfil
 function salvarPerfilCompleto(){
   if(!usuarioAtual){ alert("Faça login"); return; }
@@ -750,43 +768,16 @@ document.addEventListener('DOMContentLoaded', () => {
     speechSynthesis.speak(fala);
   }
 
-  function atualizarResumoVoz() {
-    const motorStatus = document.getElementById('motorStatus');
-    document.getElementById('vozMotor').textContent =
-      motorStatus && motorStatus.textContent ? motorStatus.textContent : "—";
+function atualizarResumoVoz() {
+  document.getElementById('vozMotor').textContent = estadoCarro.motor ? 'Ligado' : 'Desligado';
+  document.getElementById('vozAr').textContent = estadoCarro.ar ? 'Ligado' : 'Desligado';
+  document.getElementById('vozTemp').textContent = estadoCarro.temperatura + "°C";
+  document.getElementById('vozRadio').textContent = estadoCarro.radio + " MHz";
+  document.getElementById('vozTravas').textContent = estadoCarro.travas.every(t => t) ? "Fechadas" : "Abertas";
 
-    const arStatus = document.getElementById('statusAr');
-    document.getElementById('vozAr').textContent =
-      arStatus && arStatus.textContent ? arStatus.textContent : "—";
-
-    const tempAr = document.getElementById('tempAr');
-    document.getElementById('vozTemp').textContent =
-      tempAr && tempAr.textContent ? tempAr.textContent + "°C" : "—";
-
-    const radioFreq = document.getElementById('radioFreq');
-    document.getElementById('vozRadio').textContent =
-      radioFreq && radioFreq.textContent ? radioFreq.textContent + " MHz" : "—";
-
-    let travasFechadas = 0;
-    for (let i = 1; i <= 5; i++) {
-      const trava = document.getElementById('travaLed' + i);
-      if (trava && trava.textContent === 'Fechada') travasFechadas++;
-    }
-    document.getElementById('vozTravas').textContent =
-      travasFechadas === 5 ? 'Fechadas' : 'Abertas';
-
-    let somaVidros = 0;
-    let total = 0;
-    for (let i = 1; i <= 4; i++) {
-      const vidro = document.getElementById('vidro' + i);
-      if (vidro) {
-        somaVidros += parseInt(vidro.value);
-        total++;
-      }
-    }
-    document.getElementById('vozVidros').textContent =
-      total > 0 ? Math.round(somaVidros / total) + "% abertos" : "—";
-  }
+  const mediaVidros = estadoCarro.vidros.reduce((a, b) => a + b, 0) / estadoCarro.vidros.length;
+  document.getElementById('vozVidros').textContent = Math.round(mediaVidros) + "% abertos";
+}
 
   function iniciarReconhecimento() {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
@@ -803,12 +794,14 @@ document.addEventListener('DOMContentLoaded', () => {
     reconhecimento.onstart = () => {
       ouvindo = true;
       document.getElementById('vozStatus').textContent = '🎙️ Ouvindo...';
+      document.getElementById('btnVoz').textContent = "🛑 Parar escuta";
       falar("Estou ouvindo seu comando.");
     };
 
     reconhecimento.onend = () => {
       ouvindo = false;
-      document.getElementById('vozStatus').textContent = '✅ Aguardando comando...';
+      document.getElementById('vozStatus').textContent = '✅ Aguardando comando... (clique para ouvir novamente)';
+      document.getElementById('btnVoz').textContent = "🎤 Iniciar comando de voz";
     };
 
     reconhecimento.onerror = (e) => {
