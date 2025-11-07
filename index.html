@@ -426,47 +426,64 @@ function login() {
 }
 
 function cadastro() {
-  const nome = document.getElementById('cadNome').value;
-  const email = document.getElementById('cadEmail').value;
-  const senha = document.getElementById('cadSenha').value;
-  const chave = document.getElementById('cadKey').value;
+  const nome = document.getElementById('cadNome').value.trim();
+  const email = document.getElementById('cadEmail').value.trim();
+  const senha = document.getElementById('cadSenha').value.trim();
+  const chave = document.getElementById('cadKey').value.trim().toUpperCase();
+  const telefone = document.getElementById('cadTel').value.trim();
+  const cpf = document.getElementById('cadCPF').value.trim();
+  const endereco = document.getElementById('cadEndereco').value.trim();
 
-  if (!chave) {
-    alert("Por favor, insira sua chave de ativação.");
+  if (!nome || !email || !senha || !chave) {
+    alert("Por favor, preencha todos os campos obrigatórios.");
     return;
   }
 
   // Verifica se a chave existe no banco antes do cadastro
   db.ref('keys/' + chave).once('value').then(snapshot => {
     if (!snapshot.exists()) {
-      alert("Chave inválida ou não registrada.");
+      alert("❌ Chave inválida ou não registrada.");
       return;
     }
 
-auth.createUserWithEmailAndPassword(email, senha)
-  .then(u => {
-    const uid = u.user.uid;
+    const dadosChave = snapshot.val();
 
-    // Salva os dados do usuário
-    db.ref('usuarios/' + uid).set({
-      nome,
-      email,
-      telefone: document.getElementById('cadTel').value,
-      cpf: document.getElementById('cadCPF').value,
-      endereco: document.getElementById('cadEndereco').value,
-      key: chave
-    });
+    // Impede uso duplicado da chave
+    if (dadosChave.status === "Indisponível") {
+      alert("⚠️ Essa chave já foi utilizada em outro cadastro!");
+      return;
+    }
 
-    // 🔥 Atualiza o status da chave como usada
-    db.ref('keys/' + chave).update({
-      status: "Indisponível",
-      usuario: uid
-    });
+    // Prossegue com o cadastro
+    auth.createUserWithEmailAndPassword(email, senha)
+      .then(u => {
+        const uid = u.user.uid;
 
-    alert("Cadastro realizado com sucesso!");
-    showPage('loginPage');
-  })
-  .catch(err => alert(err.message));
+        // Salva os dados do usuário no banco
+        db.ref('usuarios/' + uid).set({
+          nome,
+          email,
+          telefone,
+          cpf,
+          endereco,
+          key: chave,
+          dataCadastro: new Date().toISOString()
+        });
+
+        // Atualiza o status da chave no banco
+        db.ref('keys/' + chave).update({
+          status: "Indisponível",
+          usuario: uid,
+          dataUso: new Date().toISOString()
+        });
+
+        alert("✅ Cadastro realizado com sucesso!");
+        showPage('loginPage');
+      })
+      .catch(err => {
+        console.error(err);
+        alert("Erro ao cadastrar: " + err.message);
+      });
   });
 }
 
