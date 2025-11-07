@@ -206,7 +206,7 @@ button:hover{background:var(--blue-2);transform:translateY(-2px);}
     <label>Cor</label>
     <input id="perfilCor" placeholder="Cor">
     <div style="margin-top:10px;">
-      <button onclick="salvarPerfilCompleto()">Salvar</button>
+      <button onclick="salvarPerfil()">Salvar Alterações</button>
       <button onclick="showPage('painelPage')">Voltar</button>
     </div>
   </div>
@@ -443,21 +443,30 @@ function cadastro() {
       return;
     }
 
-    auth.createUserWithEmailAndPassword(email, senha)
-      .then(u => {
-        const uid = u.user.uid;
-        db.ref('usuarios/' + uid).set({
-          nome,
-          email,
-          telefone: document.getElementById('cadTel').value,
-          cpf: document.getElementById('cadCPF').value,
-          endereco: document.getElementById('cadEndereco').value,
-          key: chave
-        });
-        alert("Cadastro realizado com sucesso!");
-        showPage('loginPage');
-      })
-      .catch(err => alert(err.message));
+auth.createUserWithEmailAndPassword(email, senha)
+  .then(u => {
+    const uid = u.user.uid;
+
+    // Salva os dados do usuário
+    db.ref('usuarios/' + uid).set({
+      nome,
+      email,
+      telefone: document.getElementById('cadTel').value,
+      cpf: document.getElementById('cadCPF').value,
+      endereco: document.getElementById('cadEndereco').value,
+      key: chave
+    });
+
+    // 🔥 Atualiza o status da chave como usada
+    db.ref('keys/' + chave).update({
+      status: "Indisponível",
+      usuario: uid
+    });
+
+    alert("Cadastro realizado com sucesso!");
+    showPage('loginPage');
+  })
+  .catch(err => alert(err.message));
   });
 }
 
@@ -504,6 +513,34 @@ function carregarPerfil() {
     veiculoImg.src = data.veiculoFotoURL || '';
     veiculoImg.style.display = data.veiculoFotoURL ? 'block' : 'none';
   });
+}
+
+// === SALVAR PERFIL ===
+function salvarPerfil() {
+  if (!usuarioAtual) {
+    alert("Usuário não autenticado.");
+    return;
+  }
+
+  const uid = usuarioAtual.uid;
+  const dadosAtualizados = {
+    nome: document.getElementById('perfilNome').value,
+    telefone: document.getElementById('perfilTel').value,
+    cpf: document.getElementById('perfilCPF').value,
+    endereco: document.getElementById('perfilEndereco').value,
+    fabricante: document.getElementById('perfilFabricante').value,
+    modelo: document.getElementById('perfilModelo').value,
+    placa: document.getElementById('perfilPlaca').value,
+    ano: document.getElementById('perfilAno').value,
+    cor: document.getElementById('perfilCor').value
+  };
+
+  db.ref('usuarios/' + uid).update(dadosAtualizados)
+    .then(() => alert("Perfil atualizado com sucesso!"))
+    .catch(error => {
+      console.error("Erro ao atualizar perfil:", error);
+      alert("Erro ao salvar alterações.");
+    });
 }
 
 function carregarVeiculo() {
