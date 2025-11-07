@@ -163,6 +163,7 @@ button:hover{background:var(--blue-2);transform:translateY(-2px);}
       <button onclick="showPage('travaPage')">Trava de Portas</button>
       <button onclick="showPage('vidrosPage')">Vidros</button>
       <button onclick="showPage('motorPage')">Motor</button>
+      <button onclick="showPage('alarmePage')">Alarme</button>
       <button onclick="showPage('arPage')">Ar Condicionado</button>
       <button onclick="showPage('radioPage')">Rádio</button>
       <button onclick="abrirGPS()">GPS</button>
@@ -306,6 +307,23 @@ button:hover{background:var(--blue-2);transform:translateY(-2px);}
     <button style="margin-left:12px;" onclick="showPage('painelPage')">Voltar</button>
   </div>
 </div>
+
+<!-- ALARME -->
+<div id="alarmePage" class="page">
+  <h1 class="text-4xl font-bold">Alarme</h1>
+  <p>Status: <span id="alarmeStatus" class="off">Desativado</span></p>
+
+  <div style="margin-top: 16px;">
+    <!-- Botão com ícone -->
+    <button id="alarmePower" onclick="toggleAlarme()"
+      style="background-color:#8B0000; border:none; border-radius:50%; padding:18px; cursor:pointer; transition: background-color 0.3s;">
+      <img src="100897.png" alt="Alarme" width="80" height="80">
+    </button>
+
+    <button style="margin-left:12px;" onclick="showPage('painelPage')">Voltar</button>
+  </div>
+</div>
+
 
   <!-- AR -->
 <div id="arPage" class="page">
@@ -594,6 +612,30 @@ function toggleMotor() {
   atualizarResumoVoz();
 }
 
+// === Função do Alarme ===
+function toggleAlarme() {
+  const statusEl = document.getElementById("alarmeStatus");
+  const botao = document.getElementById("alarmePower");
+  const ligado = statusEl.textContent === "Ativado";
+
+  if (ligado) {
+    statusEl.textContent = "Desativado";
+    statusEl.classList.remove("on");
+    statusEl.classList.add("off");
+    botao.style.backgroundColor = "#8B0000"; // vermelho escuro
+  } else {
+    statusEl.textContent = "Ativado";
+    statusEl.classList.remove("off");
+    statusEl.classList.add("on");
+    botao.style.backgroundColor = "#228B22"; // verde
+  }
+
+  // 🔄 Atualiza no banco (caso use Firebase)
+  if (typeof db !== "undefined" && auth.currentUser) {
+    db.ref("usuarios/" + auth.currentUser.uid + "/alarme").set(!ligado);
+  }
+}
+
 function toggleAr() {
   window.estadoCarro.ar = !window.estadoCarro.ar;
   const status = document.getElementById('statusAr');
@@ -673,6 +715,7 @@ function showPage(id) {
   document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
   document.getElementById(id).classList.add("active");
   if (id === "vozPage") setTimeout(atualizarResumoVoz, 200);
+  if (id === "alarmePage") console.log("Página de alarme aberta"); // só pra confirmar no console
 }
 
 /* ===== COMANDO DE VOZ ===== */
