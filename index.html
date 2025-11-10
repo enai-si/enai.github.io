@@ -236,22 +236,42 @@ button:hover{background:var(--blue-2);transform:translateY(-2px);}
   </div>
 </div>
 
-    <!-- TRAVAS -->
-  <div id="travaPage" class="page">
-    <h1>Trava de Portas</h1>
-    <div style="margin-top:12px;">
-      <div style="margin-bottom:8px;"><strong>Esq Dianteira:</strong> <span id="travaLed1" class="on">Fechada</span> <button onclick="toggleTrava(1)">Abrir</button></div>
-      <div style="margin-bottom:8px;"><strong>Esq Traseira:</strong> <span id="travaLed2" class="on">Fechada</span> <button onclick="toggleTrava(2)">Abrir</button></div>
-      <div style="margin-bottom:8px;"><strong>Dir Dianteira:</strong> <span id="travaLed3" class="on">Fechada</span> <button onclick="toggleTrava(3)">Abrir</button></div>
-      <div style="margin-bottom:8px;"><strong>Dir Traseira:</strong> <span id="travaLed4" class="on">Fechada</span> <button onclick="toggleTrava(4)">Abrir</button></div>
-      <div style="margin-bottom:8px;"><strong>Porta-malas:</strong> <span id="travaLed5" class="on">Fechada</span> <button onclick="toggleTrava(5)">Abrir</button></div>
+<!-- TRAVAS -->
+<div id="travaPage" class="page">
+  <h1 class="text-4xl font-bold">Trava de Portas</h1>
+  <div style="margin-top:12px;">
+    <div style="margin-bottom:8px;">
+      <strong>Esq Dianteira:</strong> 
+      <span id="travaLed1" class="on">Fechada</span> 
+      <button id="botaoTrava1" onclick="toggleTrava(1)">Abrir</button>
     </div>
-    <div style="margin-top:12px;">
-      <button onclick="abrirTudo()">Abrir Tudo</button>
-      <button onclick="fecharTudo()">Fechar Tudo</button>
-      <button onclick="showPage('painelPage')">Voltar</button>
+    <div style="margin-bottom:8px;">
+      <strong>Esq Traseira:</strong> 
+      <span id="travaLed2" class="on">Fechada</span> 
+      <button id="botaoTrava2" onclick="toggleTrava(2)">Abrir</button>
+    </div>
+    <div style="margin-bottom:8px;">
+      <strong>Dir Dianteira:</strong> 
+      <span id="travaLed3" class="on">Fechada</span> 
+      <button id="botaoTrava3" onclick="toggleTrava(3)">Abrir</button>
+    </div>
+    <div style="margin-bottom:8px;">
+      <strong>Dir Traseira:</strong> 
+      <span id="travaLed4" class="on">Fechada</span> 
+      <button id="botaoTrava4" onclick="toggleTrava(4)">Abrir</button>
+    </div>
+    <div style="margin-bottom:8px;">
+      <strong>Porta-malas:</strong> 
+      <span id="travaLed5" class="on">Fechada</span> 
+      <button id="botaoTrava5" onclick="toggleTrava(5)">Abrir</button>
     </div>
   </div>
+  <div style="margin-top:12px;">
+    <button onclick="abrirTudo()">Abrir Tudo</button>
+    <button onclick="fecharTudo()">Fechar Tudo</button>
+    <button onclick="showPage('painelPage')">Voltar</button>
+  </div>
+</div>
 
   <!-- VIDROS -->
   <div id="vidrosPage" class="page">
