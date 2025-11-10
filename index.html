@@ -163,7 +163,6 @@ button:hover{background:var(--blue-2);transform:translateY(-2px);}
       <button onclick="showPage('travaPage')">Trava de Portas</button>
       <button onclick="showPage('vidrosPage')">Vidros</button>
       <button onclick="showPage('motorPage')">Motor</button>
-      <button onclick="showPage('alarmePage')">Alarme</button>
       <button onclick="showPage('arPage')">Ar Condicionado</button>
       <button onclick="showPage('radioPage')">Rádio</button>
       <button onclick="abrirGPS()">GPS</button>
@@ -207,7 +206,7 @@ button:hover{background:var(--blue-2);transform:translateY(-2px);}
     <label>Cor</label>
     <input id="perfilCor" placeholder="Cor">
     <div style="margin-top:10px;">
-      <button onclick="salvarPerfil()">Salvar Alterações</button>
+      <button onclick="salvarPerfilCompleto()">Salvar</button>
       <button onclick="showPage('painelPage')">Voltar</button>
     </div>
   </div>
@@ -237,42 +236,22 @@ button:hover{background:var(--blue-2);transform:translateY(-2px);}
   </div>
 </div>
 
-   <!-- TRAVAS -->
-<div id="travaPage" class="page">
-  <h1 class="text-4xl font-bold">Trava de Portas</h1>
-  <div style="margin-top:12px;">
-    <div style="margin-bottom:8px;">
-      <strong>Esq Dianteira:</strong> 
-      <span id="travaLed1" class="on">Fechada</span> 
-      <button id="botaoTrava1" onclick="toggleTrava(1)">Abrir</button>
+    <!-- TRAVAS -->
+  <div id="travaPage" class="page">
+    <h1>Trava de Portas</h1>
+    <div style="margin-top:12px;">
+      <div style="margin-bottom:8px;"><strong>Esq Dianteira:</strong> <span id="travaLed1" class="on">Fechada</span> <button onclick="toggleTrava(1)">Abrir</button></div>
+      <div style="margin-bottom:8px;"><strong>Esq Traseira:</strong> <span id="travaLed2" class="on">Fechada</span> <button onclick="toggleTrava(2)">Abrir</button></div>
+      <div style="margin-bottom:8px;"><strong>Dir Dianteira:</strong> <span id="travaLed3" class="on">Fechada</span> <button onclick="toggleTrava(3)">Abrir</button></div>
+      <div style="margin-bottom:8px;"><strong>Dir Traseira:</strong> <span id="travaLed4" class="on">Fechada</span> <button onclick="toggleTrava(4)">Abrir</button></div>
+      <div style="margin-bottom:8px;"><strong>Porta-malas:</strong> <span id="travaLed5" class="on">Fechada</span> <button onclick="toggleTrava(5)">Abrir</button></div>
     </div>
-    <div style="margin-bottom:8px;">
-      <strong>Esq Traseira:</strong> 
-      <span id="travaLed2" class="on">Fechada</span> 
-      <button id="botaoTrava2" onclick="toggleTrava(2)">Abrir</button>
-    </div>
-    <div style="margin-bottom:8px;">
-      <strong>Dir Dianteira:</strong> 
-      <span id="travaLed3" class="on">Fechada</span> 
-      <button id="botaoTrava3" onclick="toggleTrava(3)">Abrir</button>
-    </div>
-    <div style="margin-bottom:8px;">
-      <strong>Dir Traseira:</strong> 
-      <span id="travaLed4" class="on">Fechada</span> 
-      <button id="botaoTrava4" onclick="toggleTrava(4)">Abrir</button>
-    </div>
-    <div style="margin-bottom:8px;">
-      <strong>Porta-malas:</strong> 
-      <span id="travaLed5" class="on">Fechada</span> 
-      <button id="botaoTrava5" onclick="toggleTrava(5)">Abrir</button>
+    <div style="margin-top:12px;">
+      <button onclick="abrirTudo()">Abrir Tudo</button>
+      <button onclick="fecharTudo()">Fechar Tudo</button>
+      <button onclick="showPage('painelPage')">Voltar</button>
     </div>
   </div>
-  <div style="margin-top:12px;">
-    <button onclick="abrirTudo()">Abrir Tudo</button>
-    <button onclick="fecharTudo()">Fechar Tudo</button>
-    <button onclick="showPage('painelPage')">Voltar</button>
-  </div>
-</div>
 
   <!-- VIDROS -->
   <div id="vidrosPage" class="page">
@@ -307,23 +286,6 @@ button:hover{background:var(--blue-2);transform:translateY(-2px);}
     <button style="margin-left:12px;" onclick="showPage('painelPage')">Voltar</button>
   </div>
 </div>
-
-<!-- ALARME -->
-<div id="alarmePage" class="page">
-  <h1 class="text-4xl font-bold">Alarme</h1>
-  <p>Status: <span id="alarmeStatus" class="off">Desativado</span></p>
-
-  <div style="margin-top: 16px;">
-    <!-- Botão com ícone -->
-    <button id="alarmePower" onclick="toggleAlarme()"
-      style="background-color:#8B0000; border:none; border-radius:50%; padding:18px; cursor:pointer; transition: background-color 0.3s;">
-      <img src="100897.png" alt="Alarme" width="80" height="80">
-    </button>
-
-    <button style="margin-left:12px;" onclick="showPage('painelPage')">Voltar</button>
-  </div>
-</div>
-
 
   <!-- AR -->
 <div id="arPage" class="page">
@@ -444,64 +406,38 @@ function login() {
 }
 
 function cadastro() {
-  const nome = document.getElementById('cadNome').value.trim();
-  const email = document.getElementById('cadEmail').value.trim();
-  const senha = document.getElementById('cadSenha').value.trim();
-  const chave = document.getElementById('cadKey').value.trim().toUpperCase();
-  const telefone = document.getElementById('cadTel').value.trim();
-  const cpf = document.getElementById('cadCPF').value.trim();
-  const endereco = document.getElementById('cadEndereco').value.trim();
+  const nome = document.getElementById('cadNome').value;
+  const email = document.getElementById('cadEmail').value;
+  const senha = document.getElementById('cadSenha').value;
+  const chave = document.getElementById('cadKey').value;
 
-  if (!nome || !email || !senha || !chave) {
-    alert("Por favor, preencha todos os campos obrigatórios.");
+  if (!chave) {
+    alert("Por favor, insira sua chave de ativação.");
     return;
   }
 
   // Verifica se a chave existe no banco antes do cadastro
   db.ref('keys/' + chave).once('value').then(snapshot => {
     if (!snapshot.exists()) {
-      alert("❌ Chave inválida ou não registrada.");
+      alert("Chave inválida ou não registrada.");
       return;
     }
 
-    const dadosChave = snapshot.val();
-
-    // Impede uso duplicado da chave
-    if (dadosChave.status === "Indisponível") {
-      alert("⚠️ Essa chave já foi utilizada em outro cadastro!");
-      return;
-    }
-
-    // Prossegue com o cadastro
     auth.createUserWithEmailAndPassword(email, senha)
       .then(u => {
         const uid = u.user.uid;
-
-        // Salva os dados do usuário no banco
         db.ref('usuarios/' + uid).set({
           nome,
           email,
-          telefone,
-          cpf,
-          endereco,
-          key: chave,
-          dataCadastro: new Date().toISOString()
+          telefone: document.getElementById('cadTel').value,
+          cpf: document.getElementById('cadCPF').value,
+          endereco: document.getElementById('cadEndereco').value,
+          key: chave
         });
-
-        // Atualiza o status da chave no banco
-        db.ref('keys/' + chave).update({
-          status: "Indisponível",
-          usuario: uid,
-          dataUso: new Date().toISOString()
-        });
-
-        alert("✅ Cadastro realizado com sucesso!");
+        alert("Cadastro realizado com sucesso!");
         showPage('loginPage');
       })
-      .catch(err => {
-        console.error(err);
-        alert("Erro ao cadastrar: " + err.message);
-      });
+      .catch(err => alert(err.message));
   });
 }
 
@@ -550,34 +486,6 @@ function carregarPerfil() {
   });
 }
 
-// === SALVAR PERFIL ===
-function salvarPerfil() {
-  if (!usuarioAtual) {
-    alert("Usuário não autenticado.");
-    return;
-  }
-
-  const uid = usuarioAtual.uid;
-  const dadosAtualizados = {
-    nome: document.getElementById('perfilNome').value,
-    telefone: document.getElementById('perfilTel').value,
-    cpf: document.getElementById('perfilCPF').value,
-    endereco: document.getElementById('perfilEndereco').value,
-    fabricante: document.getElementById('perfilFabricante').value,
-    modelo: document.getElementById('perfilModelo').value,
-    placa: document.getElementById('perfilPlaca').value,
-    ano: document.getElementById('perfilAno').value,
-    cor: document.getElementById('perfilCor').value
-  };
-
-  db.ref('usuarios/' + uid).update(dadosAtualizados)
-    .then(() => alert("Perfil atualizado com sucesso!"))
-    .catch(error => {
-      console.error("Erro ao atualizar perfil:", error);
-      alert("Erro ao salvar alterações.");
-    });
-}
-
 function carregarVeiculo() {
   if (!usuarioAtual) return;
   const uid = usuarioAtual.uid;
@@ -612,30 +520,6 @@ function toggleMotor() {
   atualizarResumoVoz();
 }
 
-// === Função do Alarme ===
-function toggleAlarme() {
-  const statusEl = document.getElementById("alarmeStatus");
-  const botao = document.getElementById("alarmePower");
-  const ligado = statusEl.textContent === "Ativado";
-
-  if (ligado) {
-    statusEl.textContent = "Desativado";
-    statusEl.classList.remove("on");
-    statusEl.classList.add("off");
-    botao.style.backgroundColor = "#8B0000"; // vermelho escuro
-  } else {
-    statusEl.textContent = "Ativado";
-    statusEl.classList.remove("off");
-    statusEl.classList.add("on");
-    botao.style.backgroundColor = "#228B22"; // verde
-  }
-
-  // 🔄 Atualiza no banco (caso use Firebase)
-  if (typeof db !== "undefined" && auth.currentUser) {
-    db.ref("usuarios/" + auth.currentUser.uid + "/alarme").set(!ligado);
-  }
-}
-
 function toggleAr() {
   window.estadoCarro.ar = !window.estadoCarro.ar;
   const status = document.getElementById('statusAr');
@@ -666,24 +550,40 @@ function alterarFreq(delta) {
   atualizarResumoVoz();
 }
 
+// Travas 
+function toggleTrava(n) {
+  const el = document.getElementById('travaLed' + n);
+  const btn = document.querySelector(`#travaPage button[onclick="toggleTrava(${n})"]`);
+  
+  if (el.textContent === 'Fechada') {
+    el.textContent = 'Aberta';
+    el.className = 'off';
+    btn.textContent = 'Fechar';
+  } else {
+    el.textContent = 'Fechada';
+    el.className = 'on';
+    btn.textContent = 'Abrir';
+  }
+}
+
 function abrirTudo() {
   for (let i = 1; i <= 5; i++) {
-    document.getElementById('travaLed' + i).textContent = 'Aberta';
-    document.getElementById('travaLed' + i).className = 'off';
-    document.getElementById('botaoTrava' + i).textContent = 'Fechar';
+    const el = document.getElementById('travaLed' + i);
+    const btn = document.querySelector(`#travaPage button[onclick="toggleTrava(${i})"]`);
+    el.textContent = 'Aberta';
+    el.className = 'off';
+    btn.textContent = 'Fechar';
   }
-  window.estadoCarro.travas = [false, false, false, false, false];
-  atualizarResumoVoz();
 }
 
 function fecharTudo() {
   for (let i = 1; i <= 5; i++) {
-    document.getElementById('travaLed' + i).textContent = 'Fechada';
-    document.getElementById('travaLed' + i).className = 'on';
-    document.getElementById('botaoTrava' + i).textContent = 'Abrir';
+    const el = document.getElementById('travaLed' + i);
+    const btn = document.querySelector(`#travaPage button[onclick="toggleTrava(${i})"]`);
+    el.textContent = 'Fechada';
+    el.className = 'on';
+    btn.textContent = 'Abrir';
   }
-  window.estadoCarro.travas = [true, true, true, true, true];
-  atualizarResumoVoz();
 }
 
 function updateVidro(n) {
@@ -714,59 +614,8 @@ window.atualizarResumoVoz = atualizarResumoVoz;
 function showPage(id) {
   document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
   document.getElementById(id).classList.add("active");
-
-  // páginas com funções específicas
-  if (id === "vozPage") {
-    setTimeout(atualizarResumoVoz, 200);
-  } else if (id === "gpsPage") {
-  }
+  if (id === "vozPage") setTimeout(atualizarResumoVoz, 200);
 }
-
-// variável global do mapa
-let map = null;
-
-function abrirGPS() {
-  // Mostra a página GPS
-  showPage('gpsPage');
-
-  // Se o mapa ainda não foi inicializado
-  if (map === null) {
-    map = L.map('mapid').setView([-14.235, -51.9253], 4);
-
-    // Adiciona camada de mapa
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© OpenStreetMap'
-    }).addTo(map);
-  }
-
-  // Tenta obter a localização atual do usuário
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      pos => {
-        const lat = pos.coords.latitude;
-        const lon = pos.coords.longitude;
-
-        map.setView([lat, lon], 15);
-        L.marker([lat, lon])
-          .addTo(map)
-          .bindPopup("📍 Sua localização atual")
-          .openPopup();
-
-        // Corrige problema do mapa ficar invisível
-        setTimeout(() => map.invalidateSize(), 300);
-      },
-      err => {
-        alert("Não foi possível obter sua localização.");
-        console.warn("Erro de geolocalização:", err);
-      },
-      { enableHighAccuracy: true, timeout: 10000 }
-    );
-  } else {
-    alert("Seu navegador não suporta geolocalização.");
-  }
-}
-
 
 /* ===== COMANDO DE VOZ ===== */
 document.addEventListener('DOMContentLoaded', () => {
