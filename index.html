@@ -165,7 +165,7 @@ button:hover{background:var(--blue-2);transform:translateY(-2px);}
       <button onclick="showPage('motorPage')">Motor</button>
       <button onclick="showPage('arPage')">Ar Condicionado</button>
       <button onclick="showPage('radioPage')">Rádio</button>
-      <button onclick="abrirGPS()">GPS</button>
+      <button onclick="showPage('gpsPage')">GPS</button>
       <button onclick="showPage('vozPage')">Comando de Voz</button>
       <button onclick="showPage('manutPage')">Plano de Manutenção</button>
       <button onclick="logout()">Sair</button>
@@ -338,12 +338,12 @@ button:hover{background:var(--blue-2);transform:translateY(-2px);}
     </div>
   </div>
 
-  <!-- GPS -->
-  <div id="gpsPage" class="page">
-    <h1 class="text-4xl font-bold">GPS - Localização Atual</h1>
-    <div id="mapid">Carregando mapa...</div>
-    <button style="margin-top:12px;" onclick="showPage('painelPage')">Voltar</button>
-  </div>
+<!-- GPS -->
+<div id="gpsPage" class="page">
+  <h1 class="text-4xl font-bold">📍 Localização do Veículo</h1>
+  <div id="mapid" style="height: 400px; margin-top: 16px; border-radius: 12px;"></div>
+  <button style="margin-top: 16px;" onclick="showPage('painelPage')">Voltar</button>
+</div>
 
 <!-- COMANDO DE VOZ -->
 <div id="vozPage" class="page">
@@ -523,6 +523,28 @@ function carregarVeiculo() {
   });
 }
 
+// === GPS FUNCIONAL (OpenStreetMap / Leaflet) ===
+let map=null;
+function abrirGPS(){
+  showPage('gpsPage');
+  if(map===null){
+    map=L.map('mapid').setView([-14.235,-51.9253],4);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+      maxZoom:19,attribution:'© OpenStreetMap'
+    }).addTo(map);
+  }
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(pos=>{
+      const lat=pos.coords.latitude;
+      const lon=pos.coords.longitude;
+      map.setView([lat,lon],15);
+      L.marker([lat,lon]).addTo(map).bindPopup("Você está aqui!").openPopup();
+    },err=>{
+      alert("Não foi possível obter a localização.");
+    });
+  }else alert("Geolocalização não suportada neste navegador.");
+}
+
 /* ===== CONTROLE DO CARRO ===== */
 function toggleMotor() {
   window.estadoCarro.motor = !window.estadoCarro.motor;
@@ -635,6 +657,9 @@ function showPage(id) {
   document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
   document.getElementById(id).classList.add("active");
   if (id === "vozPage") setTimeout(atualizarResumoVoz, 200);
+else if (id === "gpsPage") {
+  setTimeout(() => abrirGPS(), 300);
+}
 }
 
 /* ===== COMANDO DE VOZ ===== */
