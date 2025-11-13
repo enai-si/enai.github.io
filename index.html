@@ -400,7 +400,7 @@ const firebaseConfig = {
   authDomain: "enai-si.firebaseapp.com",
   databaseURL: "https://enai-si-default-rtdb.firebaseio.com",
   projectId: "enai-si",
-  storageBucket: "enai-si.firebasestorage.app",
+  storageBucket: "enai-si.appspot.com",
   messagingSenderId: "796550446327",
   appId: "1:796550446327:web:636483a584052f960be7f2",
   measurementId: "G-RJWEQ2QSBQ"
@@ -409,6 +409,15 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
 const storage = firebase.storage();
+
+firebase.auth().onAuthStateChanged(user => {
+  if (user) {
+    usuarioAtual = user;
+    console.log("Usuário logado:", user.email, "UID:", user.uid);
+  } else {
+    usuarioAtual = null;
+  }
+});
 
 let usuarioAtual = null;
 
@@ -547,9 +556,14 @@ function abrirGPS(){
 
 /* ===== CONTROLE DO CARRO ===== */
 function toggleMotor() {
+  if (!usuarioAtual) return alert("Usuário não autenticado.");
+
+  // Alterna o estado local
   window.estadoCarro.motor = !window.estadoCarro.motor;
+
   const status = document.getElementById('motorStatus');
   const botao = document.getElementById('motorPower');
+
   if (window.estadoCarro.motor) {
     status.textContent = 'Ligado';
     status.className = 'on';
@@ -559,6 +573,13 @@ function toggleMotor() {
     status.className = 'off';
     botao.style.backgroundColor = '#003366';
   }
+
+  // Atualiza no Firebase (para o ESP32 ler)
+  const uid = usuarioAtual.uid;
+  db.ref('controle/' + uid).update({
+    motor: window.estadoCarro.motor ? 1 : 0
+  });
+
   atualizarResumoVoz();
 }
 
